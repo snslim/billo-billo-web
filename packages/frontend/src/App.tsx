@@ -1,9 +1,11 @@
+import { Layout } from './components/Layout';
+
 function App() {
   return (
-    <div>
-      <h1>Billo-Billo</h1>
-    </div>
-  )
+    <Layout>
+      <div></div>
+    </Layout>
+  );
 }
 
-export default App
+export default App;
