@@ -3,13 +3,15 @@ import { Layout } from './components/Layout';
 import { StepIndicator } from './components/StepIndicator';
 import { StepRole } from './components/StepRole';
 import { StepUpload } from './components/StepUpload';
+import { StepExtraction } from './components/StepExtraction';
 import { AppStep } from './types';
-import type { UserRole } from './types';
+import type { UserRole, InvoiceData } from './types';
 
 function App() {
   const [currentStep, setCurrentStep] = useState<AppStep>(AppStep.ROLE_SELECTION);
   const [role, setRole] = useState<UserRole>(null);
   const [file, setFile] = useState<File | null>(null);
+  const [invoiceData, setInvoiceData] = useState<InvoiceData | null>(null);
 
   const handleRoleSelect = (selectedRole: UserRole) => {
     setRole(selectedRole);
@@ -25,6 +27,16 @@ function App() {
     setFile(null);
   };
 
+  const handleExtractionConfirm = (data: InvoiceData) => {
+    setInvoiceData(data);
+  };
+
+  const handleExtractionCancel = () => {
+    setFile(null);
+    setInvoiceData(null);
+    setCurrentStep(AppStep.UPLOAD);
+  };
+
   const renderStep = () => {
     switch (currentStep) {
       case AppStep.ROLE_SELECTION:
@@ -38,7 +50,16 @@ function App() {
           />
         );
       case AppStep.EXTRACTION:
-        return <div className="text-center text-slate-500">데이터 추출 중...</div>;
+        return (
+          <StepExtraction
+            file={file}
+            initialData={invoiceData}
+            onConfirm={handleExtractionConfirm}
+            onCancel={handleExtractionCancel}
+          />
+        );
+      case AppStep.VALIDATION:
+        return <div className="text-center text-slate-500">검증 단계 준비 중...</div>;
       default:
         return null;
     }
