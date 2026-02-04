@@ -20,7 +20,10 @@ export const parseUpstageResponse = (response: unknown): InvoiceData => {
     docType = 'zero_rate';
   } else if (normalizedText.includes('세금계산서') || normalizedText.includes('전자세금계산서')) {
     docType = 'general';
-  } else if (normalizedText.includes('계산서')) {
+  } else if (
+    normalizedText.includes('계산서') || 
+    normalizedText.includes('면세')
+  ) {
     docType = 'duty_free';
   }
 

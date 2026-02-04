@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import type { InvoiceData } from '../types';
+import type { InvoiceData, DocType } from '../types';
 import { AlertCircle, ArrowRight, FileText, PenLine, RefreshCw, ScanText, Ban, BookOpenCheck } from 'lucide-react';
 import { formatCurrency, parseCurrency, cn } from '../utils/formatting';
 import toast from 'react-hot-toast';
@@ -184,12 +184,22 @@ export const StepExtraction = ({ file, initialData, onConfirm, onCancel }: Props
   };
 
   if (!loading && data.docType !== 'general' && !extractionFailed) {
-    const docTitles: Record<string, string> = {
-      'zero_rate': '영세율 세금계산서',
-      'duty_free': '계산서 (면세)',
-      'unknown': '알 수 없는 문서'
+    type UnsupportedDocType = Exclude<DocType, 'general'>;
+    const docInfo: Record<UnsupportedDocType, { title: string; lawRef: string }> = {
+      zero_rate: {
+        title: '영세율 세금계산서',
+        lawRef: '부가가치세법 제21조~제24조에 따른 영세율 적용 거래는 수출 등 특수한 경우에 해당하며, 별도의 영세율 첨부서류 제출이 필요합니다.'
+      },
+      duty_free: {
+        title: '계산서 (면세)',
+        lawRef: '부가가치세법 제26조에 따른 면세 거래는 세금계산서가 아닌 계산서를 발급하며, 매입세액 공제가 적용되지 않습니다.'
+      },
+      unknown: {
+        title: '알 수 없는 문서',
+        lawRef: '문서 유형을 인식할 수 없습니다. 세금계산서 양식이 맞는지 확인해주세요.'
+      }
     };
-    const title = docTitles[data.docType] || '지원 불가 문서';
+    const info = docInfo[data.docType as UnsupportedDocType];
 
     return (
       <div className="w-full max-w-2xl mx-auto text-center py-16 px-4 animate-fade-in">
@@ -197,7 +207,7 @@ export const StepExtraction = ({ file, initialData, onConfirm, onCancel }: Props
           <Ban className="w-10 h-10 text-amber-600" />
         </div>
         <h3 className="text-xl font-bold text-slate-900 mb-2">
-          '{title}'는 지원하지 않습니다.
+          '{info.title}'는 지원하지 않습니다.
         </h3>
         <div className="bg-white p-6 rounded-lg border border-slate-200 shadow-sm max-w-lg mx-auto mb-8 text-left">
           <p className="text-slate-600 mb-4 text-sm leading-relaxed">
@@ -207,9 +217,9 @@ export const StepExtraction = ({ file, initialData, onConfirm, onCancel }: Props
             AI가 잘못된 조언을 제공할 위험이 있어 처리를 제한하고 있습니다.
           </p>
           <div className="bg-slate-50 p-3 rounded border border-slate-200 flex items-start">
-            <BookOpenCheck className="w-4 h-4 text-blue-600 mt-0.5 mr-2 flex-shrink-0"/>
+            <BookOpenCheck className="w-4 h-4 text-blue-600 mt-0.5 mr-2 shrink-0"/>
             <span className="text-xs text-slate-500">
-              참고: 부가가치세법 제32조 및 관련 규정에 따라 영세율/면세 거래는 별도의 신고 절차가 필요합니다.
+              {info.lawRef}
             </span>
           </div>
         </div>
@@ -249,7 +259,7 @@ export const StepExtraction = ({ file, initialData, onConfirm, onCancel }: Props
           <FileText className="w-4 h-4 mr-2 text-slate-500" /> 
           <h3 className="text-sm font-semibold text-slate-700">원본 이미지</h3>
         </div>
-        <div className="flex-grow bg-slate-100 rounded-lg overflow-hidden border border-slate-200 relative min-h-[400px] flex items-center justify-center group">
+        <div className="grow bg-slate-100 rounded-lg overflow-hidden border border-slate-200 relative min-h-[400px] flex items-center justify-center group">
           {previewUrl ? (
             <img src={previewUrl} alt="Preview" className="max-w-full max-h-[600px] object-contain shadow-sm transition-transform duration-300 group-hover:scale-[1.02]" />
           ) : (
@@ -268,7 +278,7 @@ export const StepExtraction = ({ file, initialData, onConfirm, onCancel }: Props
               </h3>
             </div>
 
-            <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-5 flex-grow">
+            <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-5 grow">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <InvoiceInput label="공급자 등록번호" value={data.supplierRegNo} onChange={(val) => handleUpdate('supplierRegNo', val)} required />
                 <InvoiceInput label="공급자 상호" value={data.supplierName} onChange={(val) => handleUpdate('supplierName', val)} required />
