@@ -12,6 +12,7 @@ interface StepUploadProps {
 
 export function StepUpload({ file, onUpload, onCancel }: StepUploadProps) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
 
   useEffect(() => {
     if (file) {
@@ -22,14 +23,45 @@ export function StepUpload({ file, onUpload, onCancel }: StepUploadProps) {
     setPreviewUrl(null);
   }, [file]);
 
+  const validateAndUpload = (selectedFile: File) => {
+    if (selectedFile.size > MAX_FILE_SIZE) {
+      toast.error('5MB 이하 파일만 업로드 가능합니다');
+      return;
+    }
+    const validTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+    if (!validTypes.includes(selectedFile.type)) {
+      toast.error('JPG, PNG, PDF 파일만 업로드 가능합니다');
+      return;
+    }
+    onUpload(selectedFile);
+  };
+
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
-      const selectedFile = event.target.files[0];
-      if (selectedFile.size > MAX_FILE_SIZE) {
-        toast.error('5MB 이하 파일만 업로드 가능합니다');
-        return;
-      }
-      onUpload(selectedFile);
+      validateAndUpload(event.target.files[0]);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const relatedTarget = e.relatedTarget as Node | null;
+    if (!e.currentTarget.contains(relatedTarget)) {
+      setIsDragging(false);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      validateAndUpload(e.dataTransfer.files[0]);
     }
   };
 
@@ -64,7 +96,14 @@ export function StepUpload({ file, onUpload, onCancel }: StepUploadProps) {
         ) : (
           <label
             htmlFor="file-upload"
-            className="group flex flex-col items-center justify-center w-full h-64 border-2 border-slate-300 border-dashed rounded-lg cursor-pointer bg-slate-50 hover:bg-blue-50 hover:border-blue-400 transition-all duration-300"
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            className={`group flex flex-col items-center justify-center w-full h-64 border-2 border-dashed rounded-lg cursor-pointer transition-all duration-300 ${
+              isDragging 
+                ? 'border-blue-500 bg-blue-50' 
+                : 'border-slate-300 bg-slate-50 hover:bg-blue-50 hover:border-blue-400'
+            }`}
           >
             <div className="flex flex-col items-center justify-center">
               <div className="p-4 bg-white rounded-full shadow-sm mb-4">
