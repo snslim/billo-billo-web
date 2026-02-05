@@ -120,6 +120,52 @@ app.post('/api/ocr', ocrLimiter, upload.single('file'), async (req: Request, res
   }
 });
 
+const validateLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 20,
+  message: { error: '검증 요청이 너무 많습니다. 잠시 후 다시 시도해주세요.' }
+});
+
+app.post('/api/validate-business', validateLimiter, async (req: Request, res: Response) => {
+  try {
+    const { b_no } = req.body;
+
+    if (!b_no || !Array.isArray(b_no) || b_no.length === 0) {
+      res.status(400).json({ error: '사업자등록번호가 필요합니다' });
+      return;
+    }
+
+    const serviceKey = process.env.NTS_API_KEY;
+    if (!serviceKey) {
+      console.error('국세청 API 키가 설정되지 않았습니다');
+      res.status(500).json({ error: '검증 서비스 설정 오류' });
+      return;
+    }
+
+    const response = await fetch(
+      `https://api.odcloud.kr/api/nts-businessman/v1/status?serviceKey=${serviceKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ b_no })
+      }
+    );
+
+    if (!response.ok) {
+      console.error(`국세청 API 오류: ${response.status}`);
+      res.status(500).json({ error: '국세청 조회 실패' });
+      return;
+    }
+
+    const data = await response.json();
+    res.json(data);
+
+  } catch (error) {
+    console.error('사업자 검증 오류:', error);
+    res.status(500).json({ error: '사업자 검증 중 오류가 발생했습니다' });
+  }
+});
+
 app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
   if (err instanceof multer.MulterError) {
     if (err.code === 'LIMIT_FILE_SIZE') {
