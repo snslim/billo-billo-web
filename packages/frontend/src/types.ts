@@ -22,7 +22,6 @@ export interface ValidationResult {
 
 export interface ValidationReport {
   supplierRegNoValid: ValidationResult;
-  supplierNameMatch: ValidationResult;
   receiverRegNoValid: ValidationResult;
   supplierStatus: ValidationResult;
   receiverStatus: ValidationResult;
