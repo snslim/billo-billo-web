@@ -7,7 +7,7 @@ import fetch from 'node-fetch';
 import { config } from 'dotenv';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { parseUpstageResponse } from './ocr/upstageParsing.js';
+import { parseUpstageResponse } from './upstageParsing.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 config({ path: resolve(__dirname, '../.env') });
@@ -163,6 +163,107 @@ app.post('/api/validate-business', validateLimiter, async (req: Request, res: Re
   } catch (error) {
     console.error('사업자 검증 오류:', error);
     res.status(500).json({ error: '사업자 검증 중 오류가 발생했습니다' });
+  }
+});
+
+const aiLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 10,
+  message: { error: 'AI 요청이 너무 많습니다. 잠시 후 다시 시도해주세요.' }
+});
+
+app.post('/api/embeddings', aiLimiter, async (req: Request, res: Response) => {
+  try {
+    const { texts } = req.body;
+
+    if (!texts || !Array.isArray(texts) || texts.length === 0) {
+      res.status(400).json({ error: '텍스트 배열이 필요합니다' });
+      return;
+    }
+
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      console.error('Gemini API 키가 설정되지 않았습니다');
+      res.status(500).json({ error: 'AI 서비스 설정 오류' });
+      return;
+    }
+
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:batchEmbedContents?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          requests: texts.map((text: string) => ({
+            model: 'models/text-embedding-004',
+            content: { parts: [{ text }] }
+          }))
+        })
+      }
+    );
+
+    if (!response.ok) {
+      const errorBody = await response.text();
+      console.error('Gemini Embedding API 오류:', errorBody);
+      res.status(500).json({ error: 'Embedding 처리 실패' });
+      return;
+    }
+
+    const data = await response.json() as { embeddings?: Array<{ values: number[] }> };
+    const embeddings = data.embeddings?.map((e) => e.values) || [];
+    res.json({ embeddings });
+
+  } catch (error) {
+    console.error('Embedding 오류:', error);
+    res.status(500).json({ error: 'Embedding 처리 중 오류가 발생했습니다' });
+  }
+});
+
+app.post('/api/advisory', aiLimiter, async (req: Request, res: Response) => {
+  try {
+    const { contents, systemInstruction } = req.body;
+
+    if (!contents || !systemInstruction) {
+      res.status(400).json({ error: '요청 데이터가 필요합니다' });
+      return;
+    }
+
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      console.error('Gemini API 키가 설정되지 않았습니다');
+      res.status(500).json({ error: 'AI 서비스 설정 오류' });
+      return;
+    }
+
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          systemInstruction: { parts: [{ text: systemInstruction }] },
+          contents: [{ parts: [{ text: contents }] }],
+          generationConfig: {
+            responseMimeType: 'application/json'
+          }
+        })
+      }
+    );
+
+    if (!response.ok) {
+      const errorBody = await response.text();
+      console.error('Gemini API 오류:', errorBody);
+      res.status(500).json({ error: 'AI 조언 생성 실패' });
+      return;
+    }
+
+    const data = await response.json() as { candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }> };
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
+    res.json({ text });
+
+  } catch (error) {
+    console.error('AI 조언 오류:', error);
+    res.status(500).json({ error: 'AI 조언 생성 중 오류가 발생했습니다' });
   }
 });
 
