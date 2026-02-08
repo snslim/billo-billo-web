@@ -1,4 +1,4 @@
-import type { InvoiceData, DocType } from '../types.js';
+import type { InvoiceData, DocType } from './types.js';
 
 interface UpstageResponse {
   text?: string;
