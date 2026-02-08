@@ -42,13 +42,14 @@ const ocrLimiter = rateLimit({
   message: { error: 'OCR 요청이 너무 많습니다. 잠시 후 다시 시도해주세요.' }
 });
 
-app.use(cors({
-  origin: [
-    'http://localhost:5173',
-    'http://localhost:5174',
-    process.env.FRONTEND_URL || ''
-  ].filter(Boolean)
-}));
+const requiredEnvVars = ['FRONTEND_URL', 'UPSTAGE_API_KEY', 'NTS_API_KEY', 'GEMINI_API_KEY'];
+for (const envVar of requiredEnvVars) {
+  if (!process.env[envVar]) {
+    throw new Error(`${envVar} 환경 변수가 설정되지 않았습니다`);
+  }
+}
+
+app.use(cors({ origin: process.env.FRONTEND_URL }));
 app.use(express.json());
 
 app.get('/api/health', (_req: Request, res: Response) => {
@@ -81,13 +82,6 @@ app.post('/api/ocr', ocrLimiter, upload.single('file'), async (req: Request, res
       return;
     }
 
-    const apiKey = process.env.UPSTAGE_API_KEY;
-    if (!apiKey) {
-      console.error('UPSTAGE API 키가 설정되지 않았습니다');
-      res.status(500).json({ error: 'OCR 서비스 설정 오류' });
-      return;
-    }
-
     const formData = new FormData();
     formData.append('document', file.buffer, {
       filename: file.originalname,
@@ -97,7 +91,7 @@ app.post('/api/ocr', ocrLimiter, upload.single('file'), async (req: Request, res
     const response = await fetch('https://api.upstage.ai/v1/document-ai/ocr', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${apiKey}`
+        'Authorization': `Bearer ${process.env.UPSTAGE_API_KEY}`
       },
       body: formData
     });
@@ -135,15 +129,8 @@ app.post('/api/validate-business', validateLimiter, async (req: Request, res: Re
       return;
     }
 
-    const serviceKey = process.env.NTS_API_KEY;
-    if (!serviceKey) {
-      console.error('국세청 API 키가 설정되지 않았습니다');
-      res.status(500).json({ error: '검증 서비스 설정 오류' });
-      return;
-    }
-
     const response = await fetch(
-      `https://api.odcloud.kr/api/nts-businessman/v1/status?serviceKey=${serviceKey}`,
+      `https://api.odcloud.kr/api/nts-businessman/v1/status?serviceKey=${process.env.NTS_API_KEY}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -181,15 +168,8 @@ app.post('/api/embeddings', aiLimiter, async (req: Request, res: Response) => {
       return;
     }
 
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) {
-      console.error('Gemini API 키가 설정되지 않았습니다');
-      res.status(500).json({ error: 'AI 서비스 설정 오류' });
-      return;
-    }
-
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:batchEmbedContents?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:batchEmbedContents?key=${process.env.GEMINI_API_KEY}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -228,15 +208,8 @@ app.post('/api/advisory', aiLimiter, async (req: Request, res: Response) => {
       return;
     }
 
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) {
-      console.error('Gemini API 키가 설정되지 않았습니다');
-      res.status(500).json({ error: 'AI 서비스 설정 오류' });
-      return;
-    }
-
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${process.env.GEMINI_API_KEY}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -284,4 +257,6 @@ app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
   res.status(500).json({ error: '서버 오류가 발생했습니다' });
 });
 
-app.listen(PORT);
+app.listen(PORT, () => {
+  console.log(`서버 실행 중: 포트 ${PORT}`);
+});
