@@ -28,7 +28,7 @@ export const StepValidation = ({ data, role, onProceed }: Props) => {
   };
 
   const ValidationItem = ({ label, result }: { label: string; result: ValidationResult | undefined }) => {
-    if (!result) return null;
+    if (!result || typeof result.type !== 'string' || typeof result.message !== 'string') return null;
 
     let Icon = CheckCircle2;
     let colorClass = 'text-emerald-600';
@@ -193,7 +193,7 @@ export const StepValidation = ({ data, role, onProceed }: Props) => {
     { label: '작성연월일 검토', result: report.dateValidity }
   ];
 
-  const hasCriticalErrors = Object.values(report).some(r => r?.type === 'error');
+  const hasCriticalErrors = Object.values(report).some(r => r && typeof r === 'object' && 'type' in r && r.type === 'error');
 
   return (
     <div className="w-full max-w-xl mx-auto animate-fade-in pb-10">
