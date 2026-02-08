@@ -2,6 +2,7 @@ import type { InvoiceData, UserRole, AIAdvisoryResponse, UserChecklistAnswers } 
 import { retrieveRelevantLawsByVector } from '../data/legalKnowledge';
 import type { LegalReference } from '../data/legalKnowledge';
 import { anonymizeInvoiceData } from '../utils/formatting';
+import { config } from '../config';
 import toast from 'react-hot-toast';
 
 const MOCK_ADVISORY_RESPONSE: AIAdvisoryResponse = {
@@ -126,7 +127,7 @@ export const getTaxAdvice = async (
   );
 
   try {
-    const response = await fetch('http://localhost:3000/api/advisory', {
+    const response = await fetch(`${config.api.baseUrl}/api/advisory`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

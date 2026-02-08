@@ -1,5 +1,6 @@
 import type { InvoiceData, UserRole, ValidationReport, ValidationResult } from '../types';
 import { parse, isValid, isAfter } from 'date-fns';
+import { config } from '../config';
 
 interface BusinessStatus {
   b_no: string;
@@ -77,10 +78,10 @@ const fetchBusinessStatusBulk = async (regNos: string[]): Promise<Map<string, Bu
   if (cleanNos.length === 0) return resultMap;
 
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 10000);
+  const timeoutId = setTimeout(() => controller.abort(), config.api.timeout);
 
   try {
-    const response = await fetch('http://localhost:3000/api/validate-business', {
+    const response = await fetch(`${config.api.baseUrl}/api/validate-business`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ b_no: cleanNos }),
