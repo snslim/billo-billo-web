@@ -5,6 +5,7 @@ import { StepRole } from './components/StepRole';
 import { StepUpload } from './components/StepUpload';
 import { StepExtraction } from './components/StepExtraction';
 import { StepValidation } from './components/StepValidation';
+import { StepAdvisory } from './components/StepAdvisory';
 import { AppStep } from './types';
 import type { UserRole, InvoiceData, ValidationReport, UserChecklistAnswers } from './types';
 
@@ -47,6 +48,15 @@ function App() {
     setCurrentStep(AppStep.ADVISORY);
   };
 
+  const handleReset = () => {
+    setCurrentStep(AppStep.ROLE_SELECTION);
+    setRole(null);
+    setFile(null);
+    setInvoiceData(null);
+    setValidationReport(null);
+    setUserAnswers({});
+  };
+
   const renderStep = () => {
     switch (currentStep) {
       case AppStep.ROLE_SELECTION:
@@ -77,12 +87,15 @@ function App() {
           />
         ) : null;
       case AppStep.ADVISORY:
-        return (
-          <div className="text-center text-slate-500 py-20">
-            <p className="text-lg font-medium">AI 세무 조언 준비 중...</p>
-            <p className="text-sm mt-2">다음 PR에서 구현됩니다.</p>
-          </div>
-        );
+        return invoiceData && validationReport ? (
+          <StepAdvisory
+            data={invoiceData}
+            role={role}
+            validationReport={validationReport}
+            userAnswers={userAnswers}
+            onReset={handleReset}
+          />
+        ) : null;
       default:
         return null;
     }

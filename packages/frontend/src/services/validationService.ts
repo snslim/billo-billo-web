@@ -65,7 +65,7 @@ const validateDateAndDeadline = (dateStr: string): ValidationResult => {
 
   return {
     isValid: true,
-    message: '작성 연월일 식별됨',
+    message: '작성연월일 식별됨',
     type: 'success'
   };
 };
