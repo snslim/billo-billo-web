@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Upload, ShieldCheck, Clock, X } from 'lucide-react';
 import toast from 'react-hot-toast';
-
-const MAX_FILE_SIZE = 5 * 1024 * 1024;
+import { config } from '../config';
 
 interface StepUploadProps {
   file: File | null;
@@ -24,12 +23,11 @@ export function StepUpload({ file, onUpload, onCancel }: StepUploadProps) {
   }, [file]);
 
   const validateAndUpload = (selectedFile: File) => {
-    if (selectedFile.size > MAX_FILE_SIZE) {
+    if (selectedFile.size > config.upload.maxFileSize) {
       toast.error('5MB 이하 파일만 업로드 가능합니다');
       return;
     }
-    const validTypes = ['image/jpeg', 'image/png', 'application/pdf'];
-    if (!validTypes.includes(selectedFile.type)) {
+    if (!config.upload.allowedTypes.some(type => type === selectedFile.type)) {
       toast.error('JPG, PNG, PDF 파일만 업로드 가능합니다');
       return;
     }

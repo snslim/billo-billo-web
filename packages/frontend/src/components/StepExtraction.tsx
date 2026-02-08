@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { InvoiceData, DocType } from '../types';
+import { config } from '../config';
 import { AlertCircle, ArrowRight, FileText, PenLine, RefreshCw, ScanText, Ban, BookOpenCheck } from 'lucide-react';
 import { formatCurrency, parseCurrency, cn } from '../utils/formatting';
 import toast from 'react-hot-toast';
@@ -89,7 +90,7 @@ const callOCRApi = async (file: File, signal?: AbortSignal): Promise<InvoiceData
   const formData = new FormData();
   formData.append('file', file);
 
-  const response = await fetch('http://localhost:3000/api/ocr', {
+  const response = await fetch(`${config.api.baseUrl}/api/ocr`, {
     method: 'POST',
     body: formData,
     signal

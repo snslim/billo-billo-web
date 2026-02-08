@@ -1,3 +1,5 @@
+import { config } from '../config';
+
 export interface LegalReference {
   id: string;
   source: string;
@@ -72,7 +74,7 @@ export const retrieveRelevantLawsByVector = async (
   try {
     const allTexts = [query, ...TAX_LAW_KNOWLEDGE_BASE.map(l => `${l.source}: ${l.content}`)];
 
-    const response = await fetch('http://localhost:3000/api/embeddings', {
+    const response = await fetch(`${config.api.baseUrl}/api/embeddings`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ texts: allTexts })
