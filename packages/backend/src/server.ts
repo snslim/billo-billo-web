@@ -257,6 +257,9 @@ app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
   res.status(500).json({ error: '서버 오류가 발생했습니다' });
 });
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`서버 실행 중: 포트 ${PORT}`);
 });
+
+export { app, server };
+export default app;
