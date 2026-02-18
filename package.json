@@ -10,7 +10,9 @@
     "dev": "npm run dev:frontend & npm run dev:backend",
     "dev:frontend": "npm run dev -w @billo-billo/frontend",
     "dev:backend": "npm run dev -w @billo-billo/backend",
-    "build": "npm run build -w @billo-billo/frontend && npm run build -w @billo-billo/backend"
+    "build": "npm run build -w @billo-billo/frontend && npm run build -w @billo-billo/backend",
+    "test": "npm test -w @billo-billo/backend && npm test -w @billo-billo/frontend",
+    "test:coverage": "npm run test:coverage -w @billo-billo/backend && npm run test:coverage -w @billo-billo/frontend"
   },
   "devDependencies": {
     "typescript": "~5.9.3"
