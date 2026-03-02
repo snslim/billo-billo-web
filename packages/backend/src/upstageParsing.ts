@@ -180,6 +180,7 @@ export const parseUpstageResponse = (response: unknown): InvoiceData => {
     supplierRegNo,
     supplierName,
     receiverRegNo,
+    receiverName,
     date,
     supplyAmount,
     taxAmount
