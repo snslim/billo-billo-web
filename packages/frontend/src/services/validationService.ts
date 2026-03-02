@@ -24,7 +24,7 @@ const validateRegNo = (num: string, label: string): ValidationResult => {
     sum += parseInt(cleaned.charAt(i)) * weights[i];
   }
   const lastWeightCalc = parseInt(cleaned.charAt(8)) * 5;
-  sum += Math.floor(lastWeightCalc / 10) + (lastWeightCalc / 10 % 1);
+  sum += Math.floor(lastWeightCalc / 10);
   const remainder = sum % 10;
   const checkDigit = (10 - remainder) % 10;
 
