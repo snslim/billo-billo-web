@@ -1,7 +1,23 @@
 import { useEffect, useState } from 'react';
-import type { InvoiceData, UserRole, ValidationReport, ValidationResult, UserChecklistAnswers } from '../types';
+import type {
+  InvoiceData,
+  UserRole,
+  ValidationReport,
+  ValidationResult,
+  UserChecklistAnswers,
+} from '../types';
 import { validateInvoiceAsync } from '../services/validationService';
-import { CheckCircle2, XCircle, AlertTriangle, ArrowRight, ShieldCheck, Loader2, FileQuestion, BadgeInfo, Sparkles } from 'lucide-react';
+import {
+  CheckCircle2,
+  XCircle,
+  AlertTriangle,
+  ArrowRight,
+  ShieldCheck,
+  Loader2,
+  FileQuestion,
+  BadgeInfo,
+  Sparkles,
+} from 'lucide-react';
 
 interface Props {
   data: InvoiceData;
@@ -11,7 +27,12 @@ interface Props {
 
 export const StepValidation = ({ data, role, onProceed }: Props) => {
   const [report, setReport] = useState<ValidationReport | null>(null);
-  const [userAnswers, setUserAnswers] = useState<UserChecklistAnswers>({});
+  const [userAnswers, setUserAnswers] = useState<UserChecklistAnswers>({
+    transmittedOnTime: 'unanswered',
+    purposeForBusiness: 'unanswered',
+    preRegistration: 'unanswered',
+    specificNonDeductible: 'unanswered',
+  });
 
   useEffect(() => {
     let isMounted = true;
@@ -20,15 +41,27 @@ export const StepValidation = ({ data, role, onProceed }: Props) => {
       if (isMounted) setReport(result);
     };
     runValidation();
-    return () => { isMounted = false; };
+    return () => {
+      isMounted = false;
+    };
   }, [data, role]);
 
   const toggleAnswer = (key: keyof UserChecklistAnswers) => {
-    setUserAnswers(prev => ({ ...prev, [key]: !prev[key] }));
+    setUserAnswers((prev) => ({
+      ...prev,
+      [key]: prev[key] === 'yes' ? 'no' : 'yes',
+    }));
   };
 
-  const ValidationItem = ({ label, result }: { label: string; result: ValidationResult | undefined }) => {
-    if (!result || typeof result.type !== 'string' || typeof result.message !== 'string') return null;
+  const ValidationItem = ({
+    label,
+    result,
+  }: {
+    label: string;
+    result: ValidationResult | undefined;
+  }) => {
+    if (!result || typeof result.type !== 'string' || typeof result.message !== 'string')
+      return null;
 
     let Icon = CheckCircle2;
     let colorClass = 'text-emerald-600';
@@ -53,22 +86,32 @@ export const StepValidation = ({ data, role, onProceed }: Props) => {
     }
 
     return (
-      <div className={`flex items-start p-3 bg-white border ${borderClass} rounded-lg shadow-sm mb-2`}>
+      <div
+        className={`flex items-start p-3 bg-white border ${borderClass} rounded-lg shadow-sm mb-2`}
+      >
         <div className={`p-1 rounded-full ${bgClass} mr-3 shrink-0 mt-0.5`}>
-          <Icon className={`w-4 h-4 ${colorClass} ${result.type === 'loading' ? 'animate-spin' : ''}`} />
+          <Icon
+            className={`w-4 h-4 ${colorClass} ${result.type === 'loading' ? 'animate-spin' : ''}`}
+          />
         </div>
         <div className="grow">
           <h4 className="font-semibold text-slate-800 text-sm flex justify-between items-center">
             {label}
             {result.type === 'error' && (
-              <span className="text-[10px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded ml-2">주의</span>
+              <span className="text-[10px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded ml-2">
+                주의
+              </span>
             )}
           </h4>
-          <p className={`text-xs mt-1 ${result.type === 'error' ? 'text-red-700 font-medium' : 'text-slate-600'}`}>
+          <p
+            className={`text-xs mt-1 ${result.type === 'error' ? 'text-red-700 font-medium' : 'text-slate-600'}`}
+          >
             {result.message}
           </p>
           {result.details && (
-            <p className="text-[11px] text-slate-400 mt-1 pl-2 border-l-2 border-slate-200">{result.details}</p>
+            <p className="text-[11px] text-slate-400 mt-1 pl-2 border-l-2 border-slate-200">
+              {result.details}
+            </p>
           )}
         </div>
       </div>
@@ -81,7 +124,7 @@ export const StepValidation = ({ data, role, onProceed }: Props) => {
     checked,
     onChange,
     legalHint,
-    subText
+    subText,
   }: {
     title: string;
     description: string;
@@ -96,11 +139,15 @@ export const StepValidation = ({ data, role, onProceed }: Props) => {
         ${checked ? 'border-blue-500 bg-blue-50/30' : 'border-slate-200 bg-white hover:border-slate-300'}`}
     >
       <div className="flex items-start space-x-3">
-        <div className={`mt-0.5 w-5 h-5 rounded border flex items-center justify-center transition-colors ${checked ? 'bg-blue-600 border-blue-600' : 'bg-white border-slate-300'}`}>
+        <div
+          className={`mt-0.5 w-5 h-5 rounded border flex items-center justify-center transition-colors ${checked ? 'bg-blue-600 border-blue-600' : 'bg-white border-slate-300'}`}
+        >
           {checked && <CheckCircle2 className="w-3.5 h-3.5 text-white" />}
         </div>
         <div>
-          <h4 className={`text-sm font-bold ${checked ? 'text-blue-800' : 'text-slate-700'}`}>{title}</h4>
+          <h4 className={`text-sm font-bold ${checked ? 'text-blue-800' : 'text-slate-700'}`}>
+            {title}
+          </h4>
           <p className="text-xs text-slate-500 mt-1 leading-relaxed">{description}</p>
           {subText && (
             <p className="text-[11px] text-slate-400 mt-2 bg-slate-50 p-1.5 rounded border border-slate-100">
@@ -126,7 +173,9 @@ export const StepValidation = ({ data, role, onProceed }: Props) => {
             <FileQuestion className="w-4 h-4 mr-2 text-blue-600" />
             추가 확인 사항
           </h3>
-          <span className="text-[10px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full">선택 사항</span>
+          <span className="text-[10px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full">
+            선택 사항
+          </span>
         </div>
         <p className="text-xs text-slate-500 mt-2 flex items-center bg-blue-50/50 p-2 rounded-lg">
           <Sparkles className="w-3.5 h-3.5 mr-2 text-blue-500" />
@@ -139,7 +188,7 @@ export const StepValidation = ({ data, role, onProceed }: Props) => {
           <ChecklistCard
             title="전송 기한 내 국세청 전송 완료"
             description="발급일 기준 다음달 10일까지 국세청에 전송하셨나요?"
-            checked={userAnswers.transmittedOnTime || false}
+            checked={userAnswers.transmittedOnTime === 'yes'}
             onChange={() => toggleAnswer('transmittedOnTime')}
             legalHint="미전송 시 가산세(0.5%~1%) 부과 대상"
           />
@@ -148,20 +197,20 @@ export const StepValidation = ({ data, role, onProceed }: Props) => {
             <ChecklistCard
               title="과세 사업을 위한 지출"
               description="귀사의 과세 사업을 위해 사용하였거나 사용할 재화 또는 용역인가요?"
-              checked={userAnswers.purposeForBusiness || false}
+              checked={userAnswers.purposeForBusiness === 'yes'}
               onChange={() => toggleAnswer('purposeForBusiness')}
               subText="사업과 직접 관련이 없거나 면세 사업과 관련된 매입세액인 경우 체크하지 마세요."
             />
             <ChecklistCard
               title="사업자 등록 신청 전 매입"
               description="사업자 등록을 신청하기 전에 발생한 거래인가요?"
-              checked={userAnswers.preRegistration || false}
+              checked={userAnswers.preRegistration === 'yes'}
               onChange={() => toggleAnswer('preRegistration')}
             />
             <ChecklistCard
               title="특정 불공제 항목"
               description="기업업무추진비(접대비), 토지 관련, 또는 비영업용 소형승용차 관련 지출인가요?"
-              checked={userAnswers.specificNonDeductible || false}
+              checked={userAnswers.specificNonDeductible === 'yes'}
               onChange={() => toggleAnswer('specificNonDeductible')}
             />
           </>
@@ -174,26 +223,33 @@ export const StepValidation = ({ data, role, onProceed }: Props) => {
     return (
       <div className="w-full max-w-2xl mx-auto text-center py-20 animate-pulse">
         <Loader2 className="w-8 h-8 text-blue-600 animate-spin mx-auto mb-4" />
-        <h3 className="text-sm font-medium text-slate-600">국세청 데이터 조회 및 유효성 분석 중...</h3>
+        <h3 className="text-sm font-medium text-slate-600">
+          국세청 데이터 조회 및 유효성 분석 중...
+        </h3>
       </div>
     );
   }
 
-  const items = role === 'supplier' ? [
-    { label: '공급자 번호 유효성', result: report.supplierRegNoValid },
-    { label: '공급받는자 번호 유효성', result: report.receiverRegNoValid },
-    { label: '공급받는자 상태(휴폐업)', result: report.receiverStatus },
-    { label: '세액 계산', result: report.taxCalculation },
-    { label: '작성연월일 검토', result: report.dateValidity }
-  ] : [
-    { label: '공급자 번호 유효성', result: report.supplierRegNoValid },
-    { label: '공급자 상태(휴폐업)', result: report.supplierStatus },
-    { label: '공급받는자 번호 유효성', result: report.receiverRegNoValid },
-    { label: '세액 계산', result: report.taxCalculation },
-    { label: '작성연월일 검토', result: report.dateValidity }
-  ];
+  const items =
+    role === 'supplier'
+      ? [
+          { label: '공급자 번호 유효성', result: report.supplierRegNoValid },
+          { label: '공급받는자 번호 유효성', result: report.receiverRegNoValid },
+          { label: '공급받는자 상태(휴폐업)', result: report.receiverStatus },
+          { label: '세액 계산', result: report.taxCalculation },
+          { label: '작성연월일 검토', result: report.dateValidity },
+        ]
+      : [
+          { label: '공급자 번호 유효성', result: report.supplierRegNoValid },
+          { label: '공급자 상태(휴폐업)', result: report.supplierStatus },
+          { label: '공급받는자 번호 유효성', result: report.receiverRegNoValid },
+          { label: '세액 계산', result: report.taxCalculation },
+          { label: '작성연월일 검토', result: report.dateValidity },
+        ];
 
-  const hasCriticalErrors = Object.values(report).some(r => r && typeof r === 'object' && 'type' in r && r.type === 'error');
+  const hasCriticalErrors = Object.values(report).some(
+    (r) => r && typeof r === 'object' && 'type' in r && r.type === 'error'
+  );
 
   return (
     <div className="w-full max-w-xl mx-auto animate-fade-in pb-10">
@@ -219,12 +275,17 @@ export const StepValidation = ({ data, role, onProceed }: Props) => {
         <button
           onClick={() => onProceed(report, userAnswers)}
           className={`w-full font-semibold py-4 px-4 rounded-xl flex items-center justify-center transition-all shadow-md text-sm group
-            ${hasCriticalErrors
-              ? 'bg-white border-2 border-red-100 text-red-600 hover:border-red-200 hover:bg-red-50'
-              : 'bg-slate-900 hover:bg-slate-800 text-white hover:shadow-lg hover:scale-[1.01]'
+            ${
+              hasCriticalErrors
+                ? 'bg-white border-2 border-red-100 text-red-600 hover:border-red-200 hover:bg-red-50'
+                : 'bg-slate-900 hover:bg-slate-800 text-white hover:shadow-lg hover:scale-[1.01]'
             }`}
         >
-          <span>{hasCriticalErrors ? '위험 요소가 있습니다. AI 조언 보기' : '검증 완료, AI 세무 비서 연결'}</span>
+          <span>
+            {hasCriticalErrors
+              ? '위험 요소가 있습니다. AI 조언 보기'
+              : '검증 완료, AI 세무 비서 연결'}
+          </span>
           <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
         </button>
       </div>
