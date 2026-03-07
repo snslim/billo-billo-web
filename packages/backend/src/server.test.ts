@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeAll, afterAll } from 'vitest';
 import request from 'supertest';
+import type { Express } from 'express';
 import type { Server } from 'http';
 
 process.env.FRONTEND_URL = 'http://localhost:5173';
@@ -10,11 +11,11 @@ process.env.PORT = '3099';
 
 const mockFetch = vi.fn();
 vi.mock('node-fetch', () => ({
-  default: mockFetch
+  default: mockFetch,
 }));
 
 describe('Server API', () => {
-  let app: any;
+  let app: Express;
   let server: Server;
 
   beforeAll(async () => {
@@ -49,9 +50,7 @@ describe('Server API', () => {
 
   describe('POST /api/upload', () => {
     it('파일이 없으면 400 에러를 반환한다', async () => {
-      const response = await request(app)
-        .post('/api/upload')
-        .send({});
+      const response = await request(app).post('/api/upload').send({});
 
       expect(response.status).toBe(400);
       expect(response.body.error).toBe('파일이 없습니다');
@@ -60,7 +59,10 @@ describe('Server API', () => {
     it('JPEG 이미지를 업로드한다', async () => {
       const response = await request(app)
         .post('/api/upload')
-        .attach('file', Buffer.from('fake image'), { filename: 'test.jpg', contentType: 'image/jpeg' });
+        .attach('file', Buffer.from('fake image'), {
+          filename: 'test.jpg',
+          contentType: 'image/jpeg',
+        });
 
       expect(response.status).toBe(200);
       expect(response.body.message).toBe('파일 업로드 성공');
@@ -70,7 +72,10 @@ describe('Server API', () => {
     it('PNG 이미지를 업로드한다', async () => {
       const response = await request(app)
         .post('/api/upload')
-        .attach('file', Buffer.from('fake image'), { filename: 'test.png', contentType: 'image/png' });
+        .attach('file', Buffer.from('fake image'), {
+          filename: 'test.png',
+          contentType: 'image/png',
+        });
 
       expect(response.status).toBe(200);
       expect(response.body.mimetype).toBe('image/png');
@@ -79,7 +84,10 @@ describe('Server API', () => {
     it('PDF 파일을 업로드한다', async () => {
       const response = await request(app)
         .post('/api/upload')
-        .attach('file', Buffer.from('fake pdf'), { filename: 'test.pdf', contentType: 'application/pdf' });
+        .attach('file', Buffer.from('fake pdf'), {
+          filename: 'test.pdf',
+          contentType: 'application/pdf',
+        });
 
       expect(response.status).toBe(200);
     });
@@ -87,7 +95,10 @@ describe('Server API', () => {
     it('지원하지 않는 파일 형식을 거부한다', async () => {
       const response = await request(app)
         .post('/api/upload')
-        .attach('file', Buffer.from('fake data'), { filename: 'test.txt', contentType: 'text/plain' });
+        .attach('file', Buffer.from('fake data'), {
+          filename: 'test.txt',
+          contentType: 'text/plain',
+        });
 
       expect(response.status).toBe(400);
       expect(response.body.error).toContain('지원하지 않는 파일 형식');
@@ -96,9 +107,7 @@ describe('Server API', () => {
 
   describe('POST /api/ocr', () => {
     it('파일이 없으면 400 에러를 반환한다', async () => {
-      const response = await request(app)
-        .post('/api/ocr')
-        .send({});
+      const response = await request(app).post('/api/ocr').send({});
 
       expect(response.status).toBe(400);
       expect(response.body.error).toBe('파일이 없습니다');
@@ -107,7 +116,10 @@ describe('Server API', () => {
     it('이미지가 아닌 파일은 400 에러를 반환한다', async () => {
       const response = await request(app)
         .post('/api/ocr')
-        .attach('file', Buffer.from('fake pdf'), { filename: 'test.pdf', contentType: 'application/pdf' });
+        .attach('file', Buffer.from('fake pdf'), {
+          filename: 'test.pdf',
+          contentType: 'application/pdf',
+        });
 
       expect(response.status).toBe(400);
       expect(response.body.error).toBe('이미지 파일만 OCR 처리 가능합니다');
@@ -116,12 +128,15 @@ describe('Server API', () => {
     it('유효한 이미지로 OCR을 실행하고 응답을 파싱한다', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ text: '전자세금계산서\n123-45-67890' })
+        json: async () => ({ text: '전자세금계산서\n123-45-67890' }),
       });
 
       const response = await request(app)
         .post('/api/ocr')
-        .attach('file', Buffer.from('fake image'), { filename: 'test.jpg', contentType: 'image/jpeg' });
+        .attach('file', Buffer.from('fake image'), {
+          filename: 'test.jpg',
+          contentType: 'image/jpeg',
+        });
 
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('docType');
@@ -132,12 +147,15 @@ describe('Server API', () => {
       mockFetch.mockResolvedValueOnce({
         ok: false,
         status: 500,
-        text: async () => 'API Error'
+        text: async () => 'API Error',
       });
 
       const response = await request(app)
         .post('/api/ocr')
-        .attach('file', Buffer.from('fake image'), { filename: 'test.jpg', contentType: 'image/jpeg' });
+        .attach('file', Buffer.from('fake image'), {
+          filename: 'test.jpg',
+          contentType: 'image/jpeg',
+        });
 
       expect(response.status).toBe(500);
       expect(response.body.error).toBe('OCR 처리 실패');
@@ -146,18 +164,14 @@ describe('Server API', () => {
 
   describe('POST /api/validate-business', () => {
     it('b_no가 없으면 400 에러를 반환한다', async () => {
-      const response = await request(app)
-        .post('/api/validate-business')
-        .send({});
+      const response = await request(app).post('/api/validate-business').send({});
 
       expect(response.status).toBe(400);
       expect(response.body.error).toBe('사업자등록번호가 필요합니다');
     });
 
     it('빈 b_no 배열은 400 에러를 반환한다', async () => {
-      const response = await request(app)
-        .post('/api/validate-business')
-        .send({ b_no: [] });
+      const response = await request(app).post('/api/validate-business').send({ b_no: [] });
 
       expect(response.status).toBe(400);
       expect(response.body.error).toBe('사업자등록번호가 필요합니다');
@@ -175,7 +189,7 @@ describe('Server API', () => {
     it('유효한 b_no로 국세청 API를 호출한다', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ data: [{ status: '01' }] })
+        json: async () => ({ data: [{ status: '01' }] }),
       });
 
       const response = await request(app)
@@ -189,7 +203,7 @@ describe('Server API', () => {
     it('국세청 API 오류를 처리한다', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: false,
-        status: 500
+        status: 500,
       });
 
       const response = await request(app)
@@ -203,27 +217,21 @@ describe('Server API', () => {
 
   describe('POST /api/embeddings', () => {
     it('texts가 없으면 400 에러를 반환한다', async () => {
-      const response = await request(app)
-        .post('/api/embeddings')
-        .send({});
+      const response = await request(app).post('/api/embeddings').send({});
 
       expect(response.status).toBe(400);
       expect(response.body.error).toBe('텍스트 배열이 필요합니다');
     });
 
     it('빈 texts 배열은 400 에러를 반환한다', async () => {
-      const response = await request(app)
-        .post('/api/embeddings')
-        .send({ texts: [] });
+      const response = await request(app).post('/api/embeddings').send({ texts: [] });
 
       expect(response.status).toBe(400);
       expect(response.body.error).toBe('텍스트 배열이 필요합니다');
     });
 
     it('잘못된 texts 형식은 400 에러를 반환한다', async () => {
-      const response = await request(app)
-        .post('/api/embeddings')
-        .send({ texts: 'not-an-array' });
+      const response = await request(app).post('/api/embeddings').send({ texts: 'not-an-array' });
 
       expect(response.status).toBe(400);
       expect(response.body.error).toBe('텍스트 배열이 필요합니다');
@@ -233,11 +241,8 @@ describe('Server API', () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => ({
-          embeddings: [
-            { values: [0.1, 0.2, 0.3] },
-            { values: [0.4, 0.5, 0.6] }
-          ]
-        })
+          embeddings: [{ values: [0.1, 0.2, 0.3] }, { values: [0.4, 0.5, 0.6] }],
+        }),
       });
 
       const response = await request(app)
@@ -253,7 +258,7 @@ describe('Server API', () => {
       mockFetch.mockResolvedValueOnce({
         ok: false,
         status: 500,
-        text: async () => 'API Error'
+        text: async () => 'API Error',
       });
 
       const response = await request(app)
@@ -267,27 +272,21 @@ describe('Server API', () => {
 
   describe('POST /api/advisory', () => {
     it('contents가 없으면 400 에러를 반환한다', async () => {
-      const response = await request(app)
-        .post('/api/advisory')
-        .send({ systemInstruction: 'test' });
+      const response = await request(app).post('/api/advisory').send({ systemInstruction: 'test' });
 
       expect(response.status).toBe(400);
       expect(response.body.error).toBe('요청 데이터가 필요합니다');
     });
 
     it('systemInstruction이 없으면 400 에러를 반환한다', async () => {
-      const response = await request(app)
-        .post('/api/advisory')
-        .send({ contents: 'test' });
+      const response = await request(app).post('/api/advisory').send({ contents: 'test' });
 
       expect(response.status).toBe(400);
       expect(response.body.error).toBe('요청 데이터가 필요합니다');
     });
 
     it('요청 본문이 비어있으면 400 에러를 반환한다', async () => {
-      const response = await request(app)
-        .post('/api/advisory')
-        .send({});
+      const response = await request(app).post('/api/advisory').send({});
 
       expect(response.status).toBe(400);
       expect(response.body.error).toBe('요청 데이터가 필요합니다');
@@ -300,19 +299,17 @@ describe('Server API', () => {
           candidates: [
             {
               content: {
-                parts: [{ text: '{"advice": "test advice"}' }]
-              }
-            }
-          ]
-        })
+                parts: [{ text: '{"advice": "test advice"}' }],
+              },
+            },
+          ],
+        }),
       });
 
-      const response = await request(app)
-        .post('/api/advisory')
-        .send({
-          contents: 'test contents',
-          systemInstruction: 'test instruction'
-        });
+      const response = await request(app).post('/api/advisory').send({
+        contents: 'test contents',
+        systemInstruction: 'test instruction',
+      });
 
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('text');
@@ -322,15 +319,13 @@ describe('Server API', () => {
       mockFetch.mockResolvedValueOnce({
         ok: false,
         status: 500,
-        text: async () => 'API Error'
+        text: async () => 'API Error',
       });
 
-      const response = await request(app)
-        .post('/api/advisory')
-        .send({
-          contents: 'test',
-          systemInstruction: 'test'
-        });
+      const response = await request(app).post('/api/advisory').send({
+        contents: 'test',
+        systemInstruction: 'test',
+      });
 
       expect(response.status).toBe(500);
       expect(response.body.error).toBe('AI 조언 생성 실패');

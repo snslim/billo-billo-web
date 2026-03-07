@@ -6,9 +6,9 @@ vi.mock('../config', () => ({
   config: {
     api: {
       baseUrl: 'http://localhost:3000',
-      timeout: 30000
-    }
-  }
+      timeout: 30000,
+    },
+  },
 }));
 
 global.fetch = vi.fn();
@@ -16,10 +16,10 @@ global.fetch = vi.fn();
 describe('validateInvoiceAsync', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    (fetch as any).mockResolvedValue({
+    vi.mocked(fetch).mockResolvedValue({
       ok: true,
-      json: async () => ({ data: [] })
-    });
+      json: async () => ({ data: [] }),
+    } as Response);
   });
 
   const basicInvoiceData: InvoiceData = {
@@ -30,7 +30,7 @@ describe('validateInvoiceAsync', () => {
     receiverRegNo: '098-76-54321',
     date: '2024-12-15',
     supplyAmount: 10000000,
-    taxAmount: 1000000
+    taxAmount: 1000000,
   };
 
   const userRole: UserRole = 'receiver';
@@ -113,7 +113,7 @@ describe('validateInvoiceAsync', () => {
       futureDate.setFullYear(futureDate.getFullYear() + 1);
       const data = {
         ...basicInvoiceData,
-        date: futureDate.toISOString().split('T')[0]
+        date: futureDate.toISOString().split('T')[0],
       };
       const result = await validateInvoiceAsync(data, userRole);
 
@@ -205,7 +205,11 @@ describe('validateInvoiceAsync', () => {
 
   describe('API 통합', () => {
     it('검증을 완료한다', async () => {
-      const data = { ...basicInvoiceData, supplierRegNo: '1234567890', receiverRegNo: '0987654321' };
+      const data = {
+        ...basicInvoiceData,
+        supplierRegNo: '1234567890',
+        receiverRegNo: '0987654321',
+      };
 
       const result = await validateInvoiceAsync(data, userRole);
 
@@ -214,7 +218,7 @@ describe('validateInvoiceAsync', () => {
     });
 
     it('API 타임아웃을 처리한다', async () => {
-      (fetch as any).mockRejectedValue({ name: 'AbortError' });
+      vi.mocked(fetch).mockRejectedValue({ name: 'AbortError' });
 
       const result = await validateInvoiceAsync(basicInvoiceData, userRole);
 
@@ -223,10 +227,10 @@ describe('validateInvoiceAsync', () => {
     });
 
     it('API 오류 응답을 처리한다', async () => {
-      (fetch as any).mockResolvedValue({
+      vi.mocked(fetch).mockResolvedValue({
         ok: false,
-        status: 500
-      });
+        status: 500,
+      } as Response);
 
       const result = await validateInvoiceAsync(basicInvoiceData, userRole);
 
@@ -234,7 +238,7 @@ describe('validateInvoiceAsync', () => {
     });
 
     it('네트워크 오류를 처리한다', async () => {
-      (fetch as any).mockRejectedValue(new Error('Network error'));
+      vi.mocked(fetch).mockRejectedValue(new Error('Network error'));
 
       const result = await validateInvoiceAsync(basicInvoiceData, userRole);
 
