@@ -30,12 +30,13 @@ export interface ValidationReport {
   dateValidity: ValidationResult;
 }
 
+export type ChecklistAnswer = 'yes' | 'no' | 'unanswered';
+
 export interface UserChecklistAnswers {
-  isElectronic?: boolean;
-  transmittedOnTime?: boolean;
-  purposeForBusiness?: boolean;
-  preRegistration?: boolean;
-  specificNonDeductible?: boolean;
+  transmittedOnTime: ChecklistAnswer;
+  purposeForBusiness: ChecklistAnswer;
+  preRegistration: ChecklistAnswer;
+  specificNonDeductible: ChecklistAnswer;
 }
 
 export interface AIAdvisoryResponse {

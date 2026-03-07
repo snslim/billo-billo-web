@@ -15,7 +15,12 @@ function App() {
   const [file, setFile] = useState<File | null>(null);
   const [invoiceData, setInvoiceData] = useState<InvoiceData | null>(null);
   const [validationReport, setValidationReport] = useState<ValidationReport | null>(null);
-  const [userAnswers, setUserAnswers] = useState<UserChecklistAnswers>({});
+  const [userAnswers, setUserAnswers] = useState<UserChecklistAnswers>({
+    transmittedOnTime: 'unanswered',
+    purposeForBusiness: 'unanswered',
+    preRegistration: 'unanswered',
+    specificNonDeductible: 'unanswered',
+  });
 
   const handleRoleSelect = (selectedRole: UserRole) => {
     setRole(selectedRole);
@@ -54,7 +59,12 @@ function App() {
     setFile(null);
     setInvoiceData(null);
     setValidationReport(null);
-    setUserAnswers({});
+    setUserAnswers({
+      transmittedOnTime: 'unanswered',
+      purposeForBusiness: 'unanswered',
+      preRegistration: 'unanswered',
+      specificNonDeductible: 'unanswered',
+    });
   };
 
   const renderStep = () => {
@@ -62,13 +72,7 @@ function App() {
       case AppStep.ROLE_SELECTION:
         return <StepRole onSelect={handleRoleSelect} />;
       case AppStep.UPLOAD:
-        return (
-          <StepUpload
-            file={file}
-            onUpload={handleUpload}
-            onCancel={handleUploadCancel}
-          />
-        );
+        return <StepUpload file={file} onUpload={handleUpload} onCancel={handleUploadCancel} />;
       case AppStep.EXTRACTION:
         return (
           <StepExtraction
@@ -80,11 +84,7 @@ function App() {
         );
       case AppStep.VALIDATION:
         return invoiceData ? (
-          <StepValidation
-            data={invoiceData}
-            role={role}
-            onProceed={handleValidationProceed}
-          />
+          <StepValidation data={invoiceData} role={role} onProceed={handleValidationProceed} />
         ) : null;
       case AppStep.ADVISORY:
         return invoiceData && validationReport ? (
