@@ -77,6 +77,11 @@ app.post('/api/ocr', ocrLimiter, upload.single('file'), async (req: Request, res
       return;
     }
 
+    if (!file.mimetype.startsWith('image/')) {
+      res.status(400).json({ error: '이미지 파일만 OCR 처리 가능합니다' });
+      return;
+    }
+
     const formData = new FormData();
     formData.append('document', file.buffer, {
       filename: file.originalname,
