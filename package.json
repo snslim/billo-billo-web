@@ -15,13 +15,19 @@
     "test:coverage": "npm run test:coverage -w @billo-billo/backend && npm run test:coverage -w @billo-billo/frontend",
     "lint": "eslint packages/*/src/",
     "lint:fix": "eslint packages/*/src/ --fix",
-    "format": "prettier --write 'packages/*/src/**/*.{ts,tsx}'"
+    "format": "prettier --write 'packages/*/src/**/*.{ts,tsx}'",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "packages/*/src/**/*.{ts,tsx}": ["eslint --fix", "prettier --write"]
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^8.56.1",
     "@typescript-eslint/parser": "^8.56.1",
     "eslint": "^10.0.3",
     "eslint-config-prettier": "^10.1.8",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.3.2",
     "prettier": "^3.8.1",
     "typescript": "~5.9.3"
   }
