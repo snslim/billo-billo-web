@@ -1,5 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { formatCurrency, parseCurrency, formatDateToKorean, getTodayString } from './invoiceHelpers';
+import {
+  formatCurrency,
+  parseCurrency,
+  formatDateToKorean,
+  getTodayString,
+} from './invoiceHelpers';
 
 describe('formatCurrency', () => {
   it('숫자를 한국 화폐 형식으로 변환한다', () => {

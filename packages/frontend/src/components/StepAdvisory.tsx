@@ -1,7 +1,23 @@
 import { useEffect, useState } from 'react';
-import type { InvoiceData, UserRole, ValidationReport, AIAdvisoryResponse, UserChecklistAnswers } from '../types';
+import type {
+  InvoiceData,
+  UserRole,
+  ValidationReport,
+  AIAdvisoryResponse,
+  UserChecklistAnswers,
+} from '../types';
 import { getTaxAdvice } from '../services/geminiService';
-import { Bot, RefreshCw, BookOpen, Scale, CheckSquare, AlertTriangle, Info, ShieldCheck, FilePlus2 } from 'lucide-react';
+import {
+  Bot,
+  RefreshCw,
+  BookOpen,
+  Scale,
+  CheckSquare,
+  AlertTriangle,
+  Info,
+  ShieldCheck,
+  FilePlus2,
+} from 'lucide-react';
 import type { LegalReference } from '../data/legalKnowledge';
 import toast from 'react-hot-toast';
 
@@ -25,8 +41,8 @@ export const StepAdvisory = ({ data, role, validationReport, userAnswers, onRese
     const fetchAdvice = async () => {
       setLoading(true);
       const issues = Object.values(validationReport)
-        .filter(r => r && typeof r === 'object' && 'type' in r && r.type !== 'success')
-        .map(r => (r && typeof r === 'object' && 'message' in r ? String(r.message) : ''));
+        .filter((r) => r && typeof r === 'object' && 'type' in r && r.type !== 'success')
+        .map((r) => (r && typeof r === 'object' && 'message' in r ? String(r.message) : ''));
 
       try {
         const result = await getTaxAdvice(data, role, issues, userAnswers);
@@ -43,15 +59,18 @@ export const StepAdvisory = ({ data, role, validationReport, userAnswers, onRese
 
     fetchAdvice();
 
-    return () => { isMounted = false; };
+    return () => {
+      isMounted = false;
+    };
   }, [data, role, validationReport, userAnswers, retryCount]);
 
   const handleRegenerateAdvice = () => {
-    toast.success("AI가 조언을 다시 작성합니다.");
-    setRetryCount(prev => prev + 1);
+    toast.success('AI가 조언을 다시 작성합니다.');
+    setRetryCount((prev) => prev + 1);
   };
 
-  const roleTitle = role === 'supplier' ? '매출자(공급자) 신고 가이드' : '매입자(수취인) 공제 체크리스트';
+  const roleTitle =
+    role === 'supplier' ? '매출자(공급자) 신고 가이드' : '매입자(수취인) 공제 체크리스트';
 
   return (
     <div className="w-full max-w-6xl mx-auto flex flex-col md:flex-row gap-6 h-auto min-h-[600px] animate-fade-in pb-12">
@@ -90,7 +109,7 @@ export const StepAdvisory = ({ data, role, validationReport, userAnswers, onRese
               <div className="space-y-6 animate-pulse p-2">
                 <div className="h-6 bg-slate-200 rounded w-3/4 mb-8"></div>
                 <div className="space-y-4">
-                  {[1, 2, 3].map(i => (
+                  {[1, 2, 3].map((i) => (
                     <div key={i} className="flex items-start space-x-3">
                       <div className="w-5 h-5 bg-slate-200 rounded shrink-0"></div>
                       <div className="h-4 bg-slate-100 rounded w-full"></div>
@@ -105,23 +124,36 @@ export const StepAdvisory = ({ data, role, validationReport, userAnswers, onRese
                     <Info className="w-4 h-4 mr-2" />
                     분석 요약
                   </h4>
-                  <p className="text-slate-700 text-sm leading-relaxed">
-                    {advisory.summary}
-                  </p>
+                  <p className="text-slate-700 text-sm leading-relaxed">{advisory.summary}</p>
                 </div>
 
                 <div>
                   <h4 className="text-base font-bold text-slate-800 mb-4 flex items-center">
-                    {role === 'receiver' ? <CheckSquare className="w-5 h-5 mr-2 text-emerald-600"/> : <AlertTriangle className="w-5 h-5 mr-2 text-amber-600"/>}
+                    {role === 'receiver' ? (
+                      <CheckSquare className="w-5 h-5 mr-2 text-emerald-600" />
+                    ) : (
+                      <AlertTriangle className="w-5 h-5 mr-2 text-amber-600" />
+                    )}
                     {role === 'receiver' ? '공제 요건 확인' : '신고 주의사항'}
                   </h4>
                   <div className="space-y-3">
-                    {(role === 'receiver' ? advisory.checklists : advisory.warnings).map((item, idx) => (
-                      <div key={idx} className={`flex items-start p-4 rounded-lg border ${role === 'receiver' ? 'bg-white border-slate-200' : 'bg-amber-50 border-amber-100'}`}>
-                        <div className={`w-1.5 h-1.5 rounded-full mr-3 mt-2 shrink-0 ${role === 'receiver' ? 'bg-emerald-500' : 'bg-amber-500'}`}></div>
-                        <span className={`text-sm ${role === 'receiver' ? 'text-slate-700' : 'text-amber-900'}`}>{item}</span>
-                      </div>
-                    ))}
+                    {(role === 'receiver' ? advisory.checklists : advisory.warnings).map(
+                      (item, idx) => (
+                        <div
+                          key={idx}
+                          className={`flex items-start p-4 rounded-lg border ${role === 'receiver' ? 'bg-white border-slate-200' : 'bg-amber-50 border-amber-100'}`}
+                        >
+                          <div
+                            className={`w-1.5 h-1.5 rounded-full mr-3 mt-2 shrink-0 ${role === 'receiver' ? 'bg-emerald-500' : 'bg-amber-500'}`}
+                          ></div>
+                          <span
+                            className={`text-sm ${role === 'receiver' ? 'text-slate-700' : 'text-amber-900'}`}
+                          >
+                            {item}
+                          </span>
+                        </div>
+                      )
+                    )}
                   </div>
                 </div>
               </div>
@@ -132,7 +164,11 @@ export const StepAdvisory = ({ data, role, validationReport, userAnswers, onRese
 
           <div className="p-4 border-t border-slate-100 bg-slate-50 flex justify-between items-center">
             <span className="text-xs text-slate-400">Powered by Gemini</span>
-            <button type="button" onClick={onReset} className="flex items-center text-sm font-bold text-slate-700 hover:text-blue-600 transition-colors cursor-pointer px-3 py-1.5 rounded-lg hover:bg-slate-200/50">
+            <button
+              type="button"
+              onClick={onReset}
+              className="flex items-center text-sm font-bold text-slate-700 hover:text-blue-600 transition-colors cursor-pointer px-3 py-1.5 rounded-lg hover:bg-slate-200/50"
+            >
               <FilePlus2 className="w-4 h-4 mr-2" /> 새로운 문서 검토하기
             </button>
           </div>
@@ -148,15 +184,22 @@ export const StepAdvisory = ({ data, role, validationReport, userAnswers, onRese
             </div>
           </div>
           <div className="grow overflow-y-auto p-4 space-y-4 bg-slate-50/50">
-            {references.length > 0 ? references.map((ref) => (
-              <div key={ref.id} className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm group hover:shadow-md transition-shadow">
-                <div className="flex items-center mb-2 text-blue-800">
-                  <BookOpen className="w-4 h-4 mr-1.5" />
-                  <span className="text-xs font-bold uppercase tracking-wider">{ref.source}</span>
+            {references.length > 0 ? (
+              references.map((ref) => (
+                <div
+                  key={ref.id}
+                  className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm group hover:shadow-md transition-shadow"
+                >
+                  <div className="flex items-center mb-2 text-blue-800">
+                    <BookOpen className="w-4 h-4 mr-1.5" />
+                    <span className="text-xs font-bold uppercase tracking-wider">{ref.source}</span>
+                  </div>
+                  <p className="text-xs text-slate-600 leading-relaxed break-keep">{ref.content}</p>
                 </div>
-                <p className="text-xs text-slate-600 leading-relaxed break-keep">{ref.content}</p>
-              </div>
-            )) : <div className="text-center py-10 text-slate-400">인용된 법령이 없습니다.</div>}
+              ))
+            ) : (
+              <div className="text-center py-10 text-slate-400">인용된 법령이 없습니다.</div>
+            )}
           </div>
         </div>
       </div>

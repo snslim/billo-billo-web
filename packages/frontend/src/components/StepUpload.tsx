@@ -27,7 +27,7 @@ export function StepUpload({ file, onUpload, onCancel }: StepUploadProps) {
       toast.error('5MB 이하 파일만 업로드 가능합니다');
       return;
     }
-    if (!config.upload.allowedTypes.some(type => type === selectedFile.type)) {
+    if (!config.upload.allowedTypes.some((type) => type === selectedFile.type)) {
       toast.error('JPG, PNG, PDF 파일만 업로드 가능합니다');
       return;
     }
@@ -67,9 +67,7 @@ export function StepUpload({ file, onUpload, onCancel }: StepUploadProps) {
     <div className="w-full max-w-2xl mx-auto">
       <div className="text-center mb-8">
         <h2 className="text-2xl font-bold text-slate-800 mb-2">세금계산서 파일 업로드</h2>
-        <p className="text-slate-500">
-          PDF 또는 이미지(JPG, PNG) 파일을 업로드해주세요.
-        </p>
+        <p className="text-slate-500">PDF 또는 이미지(JPG, PNG) 파일을 업로드해주세요.</p>
       </div>
 
       <div className="bg-white p-8 rounded-xl shadow-lg border border-slate-200">
@@ -98,8 +96,8 @@ export function StepUpload({ file, onUpload, onCancel }: StepUploadProps) {
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
             className={`group flex flex-col items-center justify-center w-full h-64 border-2 border-dashed rounded-lg cursor-pointer transition-all duration-300 ${
-              isDragging 
-                ? 'border-blue-500 bg-blue-50' 
+              isDragging
+                ? 'border-blue-500 bg-blue-50'
                 : 'border-slate-300 bg-slate-50 hover:bg-blue-50 hover:border-blue-400'
             }`}
           >

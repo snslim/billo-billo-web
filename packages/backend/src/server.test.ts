@@ -114,12 +114,10 @@ describe('Server API', () => {
     });
 
     it('이미지가 아닌 파일은 400 에러를 반환한다', async () => {
-      const response = await request(app)
-        .post('/api/ocr')
-        .attach('file', Buffer.from('fake pdf'), {
-          filename: 'test.pdf',
-          contentType: 'application/pdf',
-        });
+      const response = await request(app).post('/api/ocr').attach('file', Buffer.from('fake pdf'), {
+        filename: 'test.pdf',
+        contentType: 'application/pdf',
+      });
 
       expect(response.status).toBe(400);
       expect(response.body.error).toBe('이미지 파일만 OCR 처리 가능합니다');

@@ -15,7 +15,7 @@ describe('StepValidation', () => {
     receiverRegNo: '098-76-54321',
     date: '2024-12-15',
     supplyAmount: 1000000,
-    taxAmount: 100000
+    taxAmount: 100000,
   };
 
   const mockReport: ValidationReport = {
@@ -24,13 +24,15 @@ describe('StepValidation', () => {
     supplierStatus: { isValid: true, message: '정상', type: 'success' },
     receiverStatus: { isValid: true, message: '정상', type: 'success' },
     taxCalculation: { isValid: true, message: '일치', type: 'success' },
-    dateValidity: { isValid: true, message: '유효', type: 'success' }
+    dateValidity: { isValid: true, message: '유효', type: 'success' },
   };
 
   const mockOnProceed = vi.fn();
 
   it('마운트 시 검증 함수를 호출한다', async () => {
-    const validateSpy = vi.spyOn(validationService, 'validateInvoiceAsync').mockResolvedValue(mockReport);
+    const validateSpy = vi
+      .spyOn(validationService, 'validateInvoiceAsync')
+      .mockResolvedValue(mockReport);
 
     render(<StepValidation data={mockData} role="receiver" onProceed={mockOnProceed} />);
 

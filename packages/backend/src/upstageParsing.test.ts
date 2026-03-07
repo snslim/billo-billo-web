@@ -34,7 +34,7 @@ describe('parseUpstageResponse', () => {
   describe('사업자등록번호 파싱', () => {
     it('표준 형식의 등록번호를 파싱한다', () => {
       const response = {
-        text: '공급자 등록번호: 123-45-67890\n공급받는자 등록번호: 098-76-54321'
+        text: '공급자 등록번호: 123-45-67890\n공급받는자 등록번호: 098-76-54321',
       };
       const result = parseUpstageResponse(response);
       expect(result.supplierRegNo).toBe('123-45-67890');
@@ -43,7 +43,7 @@ describe('parseUpstageResponse', () => {
 
     it('등록번호 키워드가 포함된 형식을 파싱한다', () => {
       const response = {
-        text: '등록번호 1234567890\n등록번호 0987654321'
+        text: '등록번호 1234567890\n등록번호 0987654321',
       };
       const result = parseUpstageResponse(response);
       expect(result.supplierRegNo).toBe('123-45-67890');
@@ -52,7 +52,7 @@ describe('parseUpstageResponse', () => {
 
     it('공백이 포함된 등록번호를 처리한다', () => {
       const response = {
-        text: '등록번호 123 45 67890'
+        text: '등록번호 123 45 67890',
       };
       const result = parseUpstageResponse(response);
       expect(result.supplierRegNo).toBe('123-45-67890');
@@ -69,7 +69,7 @@ describe('parseUpstageResponse', () => {
   describe('회사명 추출', () => {
     it('주식회사 접두사가 있는 회사명을 추출한다', () => {
       const response = {
-        text: '주식회사 빌런즈\n공급자'
+        text: '주식회사 빌런즈\n공급자',
       };
       const result = parseUpstageResponse(response);
       expect(result.supplierName).toBe('주식회사빌런즈');
@@ -77,7 +77,7 @@ describe('parseUpstageResponse', () => {
 
     it('㈜ 접두사가 있는 회사명을 추출한다', () => {
       const response = {
-        text: '㈜삼성전자\n공급받는자'
+        text: '㈜삼성전자\n공급받는자',
       };
       const result = parseUpstageResponse(response);
       expect(result.supplierName).toBe('㈜삼성전자');
@@ -85,7 +85,7 @@ describe('parseUpstageResponse', () => {
 
     it('여러 회사가 있을 때 첫 번째 회사를 추출한다', () => {
       const response = {
-        text: '(주)LG전자\n㈜삼성전자'
+        text: '(주)LG전자\n㈜삼성전자',
       };
       const result = parseUpstageResponse(response);
       expect(result.supplierName).toBe('(주)LG전자');
@@ -93,7 +93,7 @@ describe('parseUpstageResponse', () => {
 
     it('사업 키워드를 사용하여 회사명을 추출한다', () => {
       const response = {
-        text: '상호\n빌런즈세무\n무역산업'
+        text: '상호\n빌런즈세무\n무역산업',
       };
       const result = parseUpstageResponse(response);
       expect(result.supplierName).toBe('빌런즈세무');
@@ -101,7 +101,7 @@ describe('parseUpstageResponse', () => {
 
     it('성명 패턴에서 개인명을 추출한다', () => {
       const response = {
-        text: '홍길동 성명\n공급자'
+        text: '홍길동 성명\n공급자',
       };
       const result = parseUpstageResponse(response);
       expect(result.supplierName).toBe('홍길동');
@@ -109,7 +109,7 @@ describe('parseUpstageResponse', () => {
 
     it('일반 단어는 회사명에서 제외한다', () => {
       const response = {
-        text: '상호\n공급자\n빌런즈세무'
+        text: '상호\n공급자\n빌런즈세무',
       };
       const result = parseUpstageResponse(response);
       expect(result.supplierName).toBe('빌런즈세무');
@@ -170,7 +170,7 @@ describe('parseUpstageResponse', () => {
   describe('금액 계산', () => {
     it('3개 값(합계, 공급가액, 세액)으로부터 금액을 계산한다', () => {
       const response = {
-        text: '합계금액: 11,000,000\n공급가액: 10,000,000\n세액: 1,000,000'
+        text: '합계금액: 11,000,000\n공급가액: 10,000,000\n세액: 1,000,000',
       };
       const result = parseUpstageResponse(response);
       expect(result.supplyAmount).toBe(10000000);
@@ -179,7 +179,7 @@ describe('parseUpstageResponse', () => {
 
     it('3개 금액이 일치하지 않으면 합계에서 계산한다', () => {
       const response = {
-        text: '합계금액: 11,000,000\n공급가액: 8,000,000\n세액: 2,000,000'
+        text: '합계금액: 11,000,000\n공급가액: 8,000,000\n세액: 2,000,000',
       };
       const result = parseUpstageResponse(response);
       expect(result.supplyAmount).toBe(10000000);
@@ -188,7 +188,7 @@ describe('parseUpstageResponse', () => {
 
     it('2개 값(공급가액, 세액)으로부터 금액을 계산한다', () => {
       const response = {
-        text: '공급가액: 5,000,000\n세액: 500,000'
+        text: '공급가액: 5,000,000\n세액: 500,000',
       };
       const result = parseUpstageResponse(response);
       expect(result.supplyAmount).toBe(5000000);
@@ -197,7 +197,7 @@ describe('parseUpstageResponse', () => {
 
     it('합계와 공급가액으로부터 금액을 계산한다', () => {
       const response = {
-        text: '합계: 5,500,000\n공급가액: 5,000,000'
+        text: '합계: 5,500,000\n공급가액: 5,000,000',
       };
       const result = parseUpstageResponse(response);
       expect(result.supplyAmount).toBe(5000000);
@@ -206,7 +206,7 @@ describe('parseUpstageResponse', () => {
 
     it('2개 금액이 다른 관계일 때 처리한다', () => {
       const response = {
-        text: '금액: 11,000,000\n금액: 8,000,000'
+        text: '금액: 11,000,000\n금액: 8,000,000',
       };
       const result = parseUpstageResponse(response);
       expect(result.supplyAmount).toBe(10000000);
@@ -215,7 +215,7 @@ describe('parseUpstageResponse', () => {
 
     it('단일 합계 금액으로부터 계산한다', () => {
       const response = {
-        text: '합계금액: 11,000,000원'
+        text: '합계금액: 11,000,000원',
       };
       const result = parseUpstageResponse(response);
       expect(result.supplyAmount).toBe(10000000);
@@ -224,7 +224,7 @@ describe('parseUpstageResponse', () => {
 
     it('작은 금액(<1000)은 필터링한다', () => {
       const response = {
-        text: '금액: 100\n세액: 500\n합계: 11,000,000'
+        text: '금액: 100\n세액: 500\n합계: 11,000,000',
       };
       const result = parseUpstageResponse(response);
       expect(result.supplyAmount).toBe(10000000);
@@ -270,7 +270,7 @@ describe('parseUpstageResponse', () => {
 
         공급가액: 10,000,000
         세액: 1,000,000
-        합계금액: 11,000,000`
+        합계금액: 11,000,000`,
       };
       const result = parseUpstageResponse(response);
 

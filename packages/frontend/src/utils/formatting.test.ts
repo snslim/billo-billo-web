@@ -74,7 +74,7 @@ describe('anonymizeInvoiceData', () => {
     receiverRegNo: '098-76-54321',
     date: '2024-12-15',
     supplyAmount: 10000000,
-    taxAmount: 1000000
+    taxAmount: 1000000,
   };
 
   it('사업자등록번호를 익명화한다', () => {
