@@ -240,13 +240,11 @@ describe('parseUpstageResponse', () => {
   });
 
   describe('엣지 케이스', () => {
-    it('빈 응답을 처리한다', () => {
+    it('빈 응답을 거부한다', () => {
       const response = {};
-      const result = parseUpstageResponse(response);
-      expect(result.docType).toBe('unknown');
-      expect(result.supplierRegNo).toBe('');
-      expect(result.date).toBe('');
-      expect(result.supplyAmount).toBe(0);
+      expect(() => parseUpstageResponse(response)).toThrow(
+        '유효하지 않은 Upstage OCR 응답 형식입니다'
+      );
     });
 
     it('공백만 있는 응답을 처리한다', () => {
