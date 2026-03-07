@@ -10,9 +10,15 @@ interface UpstageResponse {
   }>;
 }
 
+function isUpstageResponse(value: unknown): value is UpstageResponse {
+  return typeof value === 'object' && value !== null && ('text' in value || 'pages' in value);
+}
+
 export const parseUpstageResponse = (response: unknown): InvoiceData => {
-  const data = response as UpstageResponse;
-  const fullText = data.text || '';
+  if (!isUpstageResponse(response)) {
+    throw new Error('유효하지 않은 Upstage OCR 응답 형식입니다');
+  }
+  const fullText = response.text || '';
 
   const normalizedText = fullText.replace(/\s+/g, '');
   let docType: DocType = 'unknown';
@@ -20,10 +26,7 @@ export const parseUpstageResponse = (response: unknown): InvoiceData => {
     docType = 'zero_rate';
   } else if (normalizedText.includes('세금계산서') || normalizedText.includes('전자세금계산서')) {
     docType = 'general';
-  } else if (
-    normalizedText.includes('계산서') || 
-    normalizedText.includes('면세')
-  ) {
+  } else if (normalizedText.includes('계산서') || normalizedText.includes('면세')) {
     docType = 'duty_free';
   }
 
@@ -54,7 +57,20 @@ export const parseUpstageResponse = (response: unknown): InvoiceData => {
   let supplierName = '';
   let receiverName = '';
 
-  const excludeWords = ['상', '호', '공', '급', '자', '받', '는', '성명', '법인명', '대표자', '사업장', '주소'];
+  const excludeWords = [
+    '상',
+    '호',
+    '공',
+    '급',
+    '자',
+    '받',
+    '는',
+    '성명',
+    '법인명',
+    '대표자',
+    '사업장',
+    '주소',
+  ];
 
   const companyPattern = /(?:\(주\)|㈜|주식회사)\s*[가-힣A-Za-z0-9]+/g;
   const companyMatches = fullText.match(companyPattern) || [];
@@ -69,14 +85,29 @@ export const parseUpstageResponse = (response: unknown): InvoiceData => {
 
   if (!supplierName) {
     const lines = fullText.split('\n');
-    const businessKeywords = ['자동차', '부품', '기업', '상사', '전자', '물산', '무역', '산업', '문구', '부동산', '빌런즈', '세무', '폼', '쟁이'];
+    const businessKeywords = [
+      '자동차',
+      '부품',
+      '기업',
+      '상사',
+      '전자',
+      '물산',
+      '무역',
+      '산업',
+      '문구',
+      '부동산',
+      '빌런즈',
+      '세무',
+      '폼',
+      '쟁이',
+    ];
 
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i].trim();
 
       const koreanWords = line.match(/[가-힣]{3,}/g) || [];
       for (const word of koreanWords) {
-        if (businessKeywords.some(k => word.includes(k)) && !excludeWords.includes(word)) {
+        if (businessKeywords.some((k) => word.includes(k)) && !excludeWords.includes(word)) {
           if (!supplierName) {
             supplierName = word;
           } else if (!receiverName && word !== supplierName) {
@@ -108,7 +139,7 @@ export const parseUpstageResponse = (response: unknown): InvoiceData => {
     /(\d{4})\s*[년./-]\s*(\d{1,2})\s*[월./-]\s*(\d{1,2})/,
     /(\d{4})\s+(\d{1,2})\s+(\d{1,2})/,
     /(\d{4})\s+(\d{1,2})\s+[I1]/,
-    /20[○0-9]{2}\s+(\d{1,2})\s+(\d{1,2})/
+    /20[○0-9]{2}\s+(\d{1,2})\s+(\d{1,2})/,
   ];
 
   for (const pattern of datePatterns) {
@@ -136,8 +167,8 @@ export const parseUpstageResponse = (response: unknown): InvoiceData => {
   const amountPattern = /\d{1,3}(?:,\d{3})+/g;
   const amountMatches = fullText.match(amountPattern) || [];
   const amounts = amountMatches
-    .map(s => parseInt(s.replace(/,/g, ''), 10))
-    .filter(n => n >= 1000)
+    .map((s) => parseInt(s.replace(/,/g, ''), 10))
+    .filter((n) => n >= 1000)
     .sort((a, b) => b - a);
 
   const uniqueAmounts = [...new Set(amounts)];
@@ -183,6 +214,6 @@ export const parseUpstageResponse = (response: unknown): InvoiceData => {
     receiverName,
     date,
     supplyAmount,
-    taxAmount
+    taxAmount,
   };
 };
