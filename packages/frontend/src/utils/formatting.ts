@@ -18,10 +18,11 @@ export const parseCurrency = (value: string): number => {
 export const anonymizeInvoiceData = (data: InvoiceData): InvoiceData => {
   return {
     ...data,
-    supplierRegNo: data.supplierRegNo.substring(0, 3) + "-**-*****",
-    receiverRegNo: data.receiverRegNo.substring(0, 3) + "-**-*****",
-    supplierName: data.supplierName.length > 2
-      ? data.supplierName[0] + "**" + data.supplierName.slice(-1)
-      : "**"
+    supplierRegNo: data.supplierRegNo.substring(0, 3) + '-**-*****',
+    receiverRegNo: data.receiverRegNo.substring(0, 3) + '-**-*****',
+    supplierName:
+      data.supplierName.length > 2
+        ? data.supplierName[0] + '**' + data.supplierName.slice(-1)
+        : '**',
   };
 };

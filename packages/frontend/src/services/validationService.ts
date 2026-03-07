@@ -29,7 +29,11 @@ const validateRegNo = (num: string, label: string): ValidationResult => {
   const checkDigit = (10 - remainder) % 10;
 
   if (checkDigit !== parseInt(cleaned.charAt(9))) {
-    return { isValid: false, message: `${label} 유효하지 않은 번호입니다 (체크섬 오류)`, type: 'error' };
+    return {
+      isValid: false,
+      message: `${label} 유효하지 않은 번호입니다 (체크섬 오류)`,
+      type: 'error',
+    };
   }
 
   return { isValid: true, message: '번호 규칙 일치 (국세청 DB 조회 대기...)', type: 'loading' };
@@ -48,7 +52,7 @@ const validateTaxMath = (supply: number, tax: number): ValidationResult => {
   return {
     isValid: false,
     message: `세액 불일치 (계산값: ${expectedTax.toLocaleString()}원)`,
-    type: 'error'
+    type: 'error',
   };
 };
 
@@ -67,12 +71,12 @@ const validateDateAndDeadline = (dateStr: string): ValidationResult => {
   return {
     isValid: true,
     message: '작성연월일 식별됨',
-    type: 'success'
+    type: 'success',
   };
 };
 
 const fetchBusinessStatusBulk = async (regNos: string[]): Promise<Map<string, BusinessStatus>> => {
-  const cleanNos = regNos.map(r => r.replace(/-/g, ''));
+  const cleanNos = regNos.map((r) => r.replace(/-/g, ''));
   const resultMap = new Map<string, BusinessStatus>();
 
   if (cleanNos.length === 0) return resultMap;
@@ -85,7 +89,7 @@ const fetchBusinessStatusBulk = async (regNos: string[]): Promise<Map<string, Bu
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ b_no: cleanNos }),
-      signal: controller.signal
+      signal: controller.signal,
     });
 
     clearTimeout(timeoutId);
@@ -130,7 +134,7 @@ const checkBusinessStatusWithDate = (
       isValid: false,
       message: `${label} 조회 실패`,
       type: 'warning',
-      details: '국세청 서버 응답 없음 또는 네트워크 오류'
+      details: '국세청 서버 응답 없음 또는 네트워크 오류',
     };
   }
 
@@ -141,7 +145,12 @@ const checkBusinessStatusWithDate = (
   }
 
   if (status.b_stt === '휴업자') {
-    return { isValid: false, message: `${prefix}휴업 상태`, type: 'error', details: '휴업기간 중 발급 불가' };
+    return {
+      isValid: false,
+      message: `${prefix}휴업 상태`,
+      type: 'error',
+      details: '휴업기간 중 발급 불가',
+    };
   }
 
   if (status.b_stt === '폐업자') {
@@ -156,7 +165,7 @@ const checkBusinessStatusWithDate = (
           isValid: false,
           message: `${prefix}폐업 (폐업일: ${formattedEndDt})`,
           type: 'error',
-          details: '폐업일 이후 작성된 세금계산서는 매입세액 공제가 불가능합니다.'
+          details: '폐업일 이후 작성된 세금계산서는 매입세액 공제가 불가능합니다.',
         };
       }
     }
@@ -164,12 +173,17 @@ const checkBusinessStatusWithDate = (
       isValid: true,
       message: `${prefix}폐업자 (작성일 기준 유효)`,
       type: 'warning',
-      details: `현재는 폐업 상태입니다 (폐업일: ${status.end_dt})`
+      details: `현재는 폐업 상태입니다 (폐업일: ${status.end_dt})`,
     };
   }
 
   if (status.tax_type.includes('국세청에 등록되지 않은') || status.tax_type === '미등록') {
-    return { isValid: false, message: `${prefix}미등록 번호`, type: 'error', details: '국세청 DB에 존재하지 않는 번호입니다.' };
+    return {
+      isValid: false,
+      message: `${prefix}미등록 번호`,
+      type: 'error',
+      details: '국세청 DB에 존재하지 않는 번호입니다.',
+    };
   }
 
   return { isValid: false, message: `${prefix}${status.b_stt || '확인불가'}`, type: 'warning' };
@@ -183,7 +197,6 @@ export const validateInvoiceAsync = async (
   let receiverRegNoValid = validateRegNo(data.receiverRegNo, '공급받는자 번호');
   const taxCalculation = validateTaxMath(data.supplyAmount, data.taxAmount);
   const dateValidity = validateDateAndDeadline(data.date);
-
 
   const regNosToFetch: string[] = [];
   if (supplierRegNoValid.isValid) regNosToFetch.push(data.supplierRegNo);
@@ -200,7 +213,11 @@ export const validateInvoiceAsync = async (
     supplierStatus = checkBusinessStatusWithDate(data.date, status, '공급자');
 
     if (status && status.b_stt) {
-      supplierRegNoValid = { isValid: true, message: '국세청 DB 등록 번호 확인됨', type: 'success' };
+      supplierRegNoValid = {
+        isValid: true,
+        message: '국세청 DB 등록 번호 확인됨',
+        type: 'success',
+      };
     }
   } else {
     supplierStatus = { isValid: false, message: '형식 오류로 조회 불가', type: 'error' };
@@ -212,7 +229,11 @@ export const validateInvoiceAsync = async (
     receiverStatus = checkBusinessStatusWithDate(data.date, status, '공급받는자');
 
     if (status && status.b_stt) {
-      receiverRegNoValid = { isValid: true, message: '국세청 DB 등록 번호 확인됨', type: 'success' };
+      receiverRegNoValid = {
+        isValid: true,
+        message: '국세청 DB 등록 번호 확인됨',
+        type: 'success',
+      };
     }
   } else {
     receiverStatus = { isValid: false, message: '형식 오류로 조회 불가', type: 'error' };
@@ -224,6 +245,6 @@ export const validateInvoiceAsync = async (
     supplierStatus,
     receiverStatus,
     taxCalculation,
-    dateValidity
+    dateValidity,
   };
 };

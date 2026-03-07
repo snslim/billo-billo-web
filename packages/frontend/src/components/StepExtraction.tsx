@@ -1,7 +1,16 @@
 import { useState, useEffect } from 'react';
 import type { InvoiceData, DocType } from '../types';
 import { config } from '../config';
-import { AlertCircle, ArrowRight, FileText, PenLine, RefreshCw, ScanText, Ban, BookOpenCheck } from 'lucide-react';
+import {
+  AlertCircle,
+  ArrowRight,
+  FileText,
+  PenLine,
+  RefreshCw,
+  ScanText,
+  Ban,
+  BookOpenCheck,
+} from 'lucide-react';
 import { formatCurrency, parseCurrency, cn } from '../utils/formatting';
 import toast from 'react-hot-toast';
 
@@ -27,7 +36,7 @@ const InvoiceInput = ({
   onChange,
   type = 'text',
   placeholder = '',
-  required = false
+  required = false,
 }: InvoiceInputProps) => {
   const displayValue = type === 'currency' ? formatCurrency(value) : value;
 
@@ -50,7 +59,8 @@ const InvoiceInput = ({
         className={cn(
           'w-full p-2.5 bg-white text-slate-900 border border-slate-300 rounded-md text-sm transition-all outline-none',
           'focus:border-blue-500 focus:ring-1 focus:ring-blue-500',
-          (type === 'currency' || label.includes('사업자') || label.includes('등록번호')) && 'font-mono',
+          (type === 'currency' || label.includes('사업자') || label.includes('등록번호')) &&
+            'font-mono',
           type === 'currency' && 'text-right'
         )}
       />
@@ -93,7 +103,7 @@ const callOCRApi = async (file: File, signal?: AbortSignal): Promise<InvoiceData
   const response = await fetch(`${config.api.baseUrl}/api/ocr`, {
     method: 'POST',
     body: formData,
-    signal
+    signal,
   });
 
   if (!response.ok) {
@@ -116,20 +126,20 @@ export const StepExtraction = ({ file, initialData, onConfirm, onCancel }: Props
     receiverRegNo: '',
     date: '',
     supplyAmount: 0,
-    taxAmount: 0
+    taxAmount: 0,
   });
 
   const switchToManualEntry = () => {
     toast.dismiss();
     setData({
       docType: 'general',
-      isTaxInvoice: true, 
+      isTaxInvoice: true,
       supplierRegNo: '',
       supplierName: '',
       receiverRegNo: '',
       date: new Date().toISOString().split('T')[0],
       supplyAmount: 0,
-      taxAmount: 0
+      taxAmount: 0,
     });
     setExtractionFailed(false);
     setLoading(false);
@@ -181,7 +191,7 @@ export const StepExtraction = ({ file, initialData, onConfirm, onCancel }: Props
   }, [file, initialData]);
 
   const handleUpdate = (field: keyof InvoiceData, value: string | number) => {
-    setData(prev => ({ ...prev, [field]: value }));
+    setData((prev) => ({ ...prev, [field]: value }));
   };
 
   if (!loading && data.docType !== 'general' && !extractionFailed) {
@@ -189,16 +199,18 @@ export const StepExtraction = ({ file, initialData, onConfirm, onCancel }: Props
     const docInfo: Record<UnsupportedDocType, { title: string; lawRef: string }> = {
       zero_rate: {
         title: '영세율 세금계산서',
-        lawRef: '부가가치세법 제21조~제24조에 따른 영세율 적용 거래는 수출 등 특수한 경우에 해당하며, 별도의 영세율 첨부서류 제출이 필요합니다.'
+        lawRef:
+          '부가가치세법 제21조~제24조에 따른 영세율 적용 거래는 수출 등 특수한 경우에 해당하며, 별도의 영세율 첨부서류 제출이 필요합니다.',
       },
       duty_free: {
         title: '계산서 (면세)',
-        lawRef: '부가가치세법 제26조에 따른 면세 거래는 세금계산서가 아닌 계산서를 발급하며, 매입세액 공제가 적용되지 않습니다.'
+        lawRef:
+          '부가가치세법 제26조에 따른 면세 거래는 세금계산서가 아닌 계산서를 발급하며, 매입세액 공제가 적용되지 않습니다.',
       },
       unknown: {
         title: '알 수 없는 문서',
-        lawRef: '문서 유형을 인식할 수 없습니다. 세금계산서 양식이 맞는지 확인해주세요.'
-      }
+        lawRef: '문서 유형을 인식할 수 없습니다. 세금계산서 양식이 맞는지 확인해주세요.',
+      },
     };
     const info = docInfo[data.docType as UnsupportedDocType];
 
@@ -212,16 +224,16 @@ export const StepExtraction = ({ file, initialData, onConfirm, onCancel }: Props
         </h3>
         <div className="bg-white p-6 rounded-lg border border-slate-200 shadow-sm max-w-lg mx-auto mb-8 text-left">
           <p className="text-slate-600 mb-4 text-sm leading-relaxed">
-            저희 서비스는 <strong>일반 과세자 간의 세금계산서(10% 세율)</strong> 분석 및 검증에 최적화되어 있습니다.
-            <br/><br/>
+            저희 서비스는 <strong>일반 과세자 간의 세금계산서(10% 세율)</strong> 분석 및 검증에
+            최적화되어 있습니다.
+            <br />
+            <br />
             현재 업로드하신 문서는 법적 검토 기준과 가산세 규정이 일반 세금계산서와 다르기 때문에,
             AI가 잘못된 조언을 제공할 위험이 있어 처리를 제한하고 있습니다.
           </p>
           <div className="bg-slate-50 p-3 rounded border border-slate-200 flex items-start">
-            <BookOpenCheck className="w-4 h-4 text-blue-600 mt-0.5 mr-2 shrink-0"/>
-            <span className="text-xs text-slate-500">
-              {info.lawRef}
-            </span>
+            <BookOpenCheck className="w-4 h-4 text-blue-600 mt-0.5 mr-2 shrink-0" />
+            <span className="text-xs text-slate-500">{info.lawRef}</span>
           </div>
         </div>
         <button
@@ -244,8 +256,16 @@ export const StepExtraction = ({ file, initialData, onConfirm, onCancel }: Props
         <h3 className="text-xl font-bold text-slate-900 mb-2">문서 인식 실패</h3>
         <p className="text-slate-500 mb-8 max-w-md mx-auto">{errorMessage}</p>
         <div className="flex justify-center gap-4">
-          <button onClick={onCancel} className="px-5 py-2.5 border rounded-lg hover:bg-slate-50 text-sm">재시도</button>
-          <button onClick={switchToManualEntry} className="px-5 py-2.5 bg-slate-900 text-white rounded-lg hover:bg-slate-800 text-sm flex items-center">
+          <button
+            onClick={onCancel}
+            className="px-5 py-2.5 border rounded-lg hover:bg-slate-50 text-sm"
+          >
+            재시도
+          </button>
+          <button
+            onClick={switchToManualEntry}
+            className="px-5 py-2.5 bg-slate-900 text-white rounded-lg hover:bg-slate-800 text-sm flex items-center"
+          >
             <PenLine className="w-4 h-4 mr-2" /> 직접 입력
           </button>
         </div>
@@ -257,12 +277,16 @@ export const StepExtraction = ({ file, initialData, onConfirm, onCancel }: Props
     <div className="flex flex-col lg:flex-row gap-6 h-full animate-fade-in">
       <div className="w-full lg:w-1/2 flex flex-col">
         <div className="flex items-center mb-3">
-          <FileText className="w-4 h-4 mr-2 text-slate-500" /> 
+          <FileText className="w-4 h-4 mr-2 text-slate-500" />
           <h3 className="text-sm font-semibold text-slate-700">원본 이미지</h3>
         </div>
         <div className="grow bg-slate-100 rounded-lg overflow-hidden border border-slate-200 relative min-h-[400px] flex items-center justify-center group">
           {previewUrl ? (
-            <img src={previewUrl} alt="Preview" className="max-w-full max-h-[600px] object-contain shadow-sm transition-transform duration-300 group-hover:scale-[1.02]" />
+            <img
+              src={previewUrl}
+              alt="Preview"
+              className="max-w-full max-h-[600px] object-contain shadow-sm transition-transform duration-300 group-hover:scale-[1.02]"
+            />
           ) : (
             <div className="text-sm text-slate-400">이미지 미리보기 없음</div>
           )}
@@ -270,7 +294,9 @@ export const StepExtraction = ({ file, initialData, onConfirm, onCancel }: Props
       </div>
 
       <div className="w-full lg:w-1/2 flex flex-col">
-        {loading ? <SkeletonForm onManualInput={switchToManualEntry} /> : (
+        {loading ? (
+          <SkeletonForm onManualInput={switchToManualEntry} />
+        ) : (
           <>
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-bold text-slate-800 flex items-center">
@@ -281,22 +307,63 @@ export const StepExtraction = ({ file, initialData, onConfirm, onCancel }: Props
 
             <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-5 grow">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                <InvoiceInput label="공급자 등록번호" value={data.supplierRegNo} onChange={(val) => handleUpdate('supplierRegNo', val)} required />
-                <InvoiceInput label="공급자 상호" value={data.supplierName} onChange={(val) => handleUpdate('supplierName', val)} required />
+                <InvoiceInput
+                  label="공급자 등록번호"
+                  value={data.supplierRegNo}
+                  onChange={(val) => handleUpdate('supplierRegNo', val)}
+                  required
+                />
+                <InvoiceInput
+                  label="공급자 상호"
+                  value={data.supplierName}
+                  onChange={(val) => handleUpdate('supplierName', val)}
+                  required
+                />
               </div>
               <div className="border-t border-slate-100"></div>
-              <InvoiceInput label="공급받는자 등록번호" value={data.receiverRegNo} onChange={(val) => handleUpdate('receiverRegNo', val)} required />
+              <InvoiceInput
+                label="공급받는자 등록번호"
+                value={data.receiverRegNo}
+                onChange={(val) => handleUpdate('receiverRegNo', val)}
+                required
+              />
               <div className="border-t border-slate-100"></div>
-              <InvoiceInput label="작성연월일" type="date" value={data.date} onChange={(val) => handleUpdate('date', val)} required />
+              <InvoiceInput
+                label="작성연월일"
+                type="date"
+                value={data.date}
+                onChange={(val) => handleUpdate('date', val)}
+                required
+              />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                <InvoiceInput label="공급가액" type="currency" value={data.supplyAmount} onChange={(val) => handleUpdate('supplyAmount', parseCurrency(val))} required />
-                <InvoiceInput label="세액" type="currency" value={data.taxAmount} onChange={(val) => handleUpdate('taxAmount', parseCurrency(val))} required />
+                <InvoiceInput
+                  label="공급가액"
+                  type="currency"
+                  value={data.supplyAmount}
+                  onChange={(val) => handleUpdate('supplyAmount', parseCurrency(val))}
+                  required
+                />
+                <InvoiceInput
+                  label="세액"
+                  type="currency"
+                  value={data.taxAmount}
+                  onChange={(val) => handleUpdate('taxAmount', parseCurrency(val))}
+                  required
+                />
               </div>
             </div>
 
             <div className="mt-6 flex justify-end space-x-3">
-              <button onClick={onCancel} className="px-4 py-2.5 text-sm font-medium text-slate-500 hover:text-slate-800">재업로드</button>
-              <button onClick={() => onConfirm(data)} className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold shadow-md flex items-center">
+              <button
+                onClick={onCancel}
+                className="px-4 py-2.5 text-sm font-medium text-slate-500 hover:text-slate-800"
+              >
+                재업로드
+              </button>
+              <button
+                onClick={() => onConfirm(data)}
+                className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold shadow-md flex items-center"
+              >
                 <span>검토 완료</span>
                 <ArrowRight className="w-4 h-4 ml-2" />
               </button>

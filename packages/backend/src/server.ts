@@ -27,19 +27,19 @@ const upload = multer({
     } else {
       cb(new Error('지원하지 않는 파일 형식입니다'));
     }
-  }
+  },
 });
 
 const uploadLimiter = rateLimit({
   windowMs: 60 * 1000,
   max: 10,
-  message: { error: '요청이 너무 많습니다. 잠시 후 다시 시도해주세요.' }
+  message: { error: '요청이 너무 많습니다. 잠시 후 다시 시도해주세요.' },
 });
 
 const ocrLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 50,
-  message: { error: 'OCR 요청이 너무 많습니다. 잠시 후 다시 시도해주세요.' }
+  message: { error: 'OCR 요청이 너무 많습니다. 잠시 후 다시 시도해주세요.' },
 });
 
 const requiredEnvVars = ['FRONTEND_URL', 'UPSTAGE_API_KEY', 'NTS_API_KEY', 'GEMINI_API_KEY'];
@@ -65,7 +65,7 @@ app.post('/api/upload', uploadLimiter, upload.single('file'), (req: Request, res
     message: '파일 업로드 성공',
     filename: req.file.originalname,
     size: req.file.size,
-    mimetype: req.file.mimetype
+    mimetype: req.file.mimetype,
   });
 });
 
@@ -80,15 +80,15 @@ app.post('/api/ocr', ocrLimiter, upload.single('file'), async (req: Request, res
     const formData = new FormData();
     formData.append('document', file.buffer, {
       filename: file.originalname,
-      contentType: file.mimetype
+      contentType: file.mimetype,
     });
 
     const response = await fetch('https://api.upstage.ai/v1/document-ai/ocr', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${process.env.UPSTAGE_API_KEY}`
+        Authorization: `Bearer ${process.env.UPSTAGE_API_KEY}`,
       },
-      body: formData
+      body: formData,
     });
 
     if (!response.ok) {
@@ -102,7 +102,6 @@ app.post('/api/ocr', ocrLimiter, upload.single('file'), async (req: Request, res
     const rawData = await response.json();
     const invoiceData = parseUpstageResponse(rawData);
     res.json(invoiceData);
-
   } catch (error) {
     console.error('OCR 처리 오류:', error);
     res.status(500).json({ error: 'OCR 처리 중 오류가 발생했습니다' });
@@ -112,7 +111,7 @@ app.post('/api/ocr', ocrLimiter, upload.single('file'), async (req: Request, res
 const validateLimiter = rateLimit({
   windowMs: 60 * 1000,
   max: 20,
-  message: { error: '검증 요청이 너무 많습니다. 잠시 후 다시 시도해주세요.' }
+  message: { error: '검증 요청이 너무 많습니다. 잠시 후 다시 시도해주세요.' },
 });
 
 app.post('/api/validate-business', validateLimiter, async (req: Request, res: Response) => {
@@ -129,7 +128,7 @@ app.post('/api/validate-business', validateLimiter, async (req: Request, res: Re
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ b_no })
+        body: JSON.stringify({ b_no }),
       }
     );
 
@@ -141,7 +140,6 @@ app.post('/api/validate-business', validateLimiter, async (req: Request, res: Re
 
     const data = await response.json();
     res.json(data);
-
   } catch (error) {
     console.error('사업자 검증 오류:', error);
     res.status(500).json({ error: '사업자 검증 중 오류가 발생했습니다' });
@@ -151,7 +149,7 @@ app.post('/api/validate-business', validateLimiter, async (req: Request, res: Re
 const aiLimiter = rateLimit({
   windowMs: 60 * 1000,
   max: 10,
-  message: { error: 'AI 요청이 너무 많습니다. 잠시 후 다시 시도해주세요.' }
+  message: { error: 'AI 요청이 너무 많습니다. 잠시 후 다시 시도해주세요.' },
 });
 
 app.post('/api/embeddings', aiLimiter, async (req: Request, res: Response) => {
@@ -171,9 +169,9 @@ app.post('/api/embeddings', aiLimiter, async (req: Request, res: Response) => {
         body: JSON.stringify({
           requests: texts.map((text: string) => ({
             model: 'models/text-embedding-004',
-            content: { parts: [{ text }] }
-          }))
-        })
+            content: { parts: [{ text }] },
+          })),
+        }),
       }
     );
 
@@ -184,10 +182,9 @@ app.post('/api/embeddings', aiLimiter, async (req: Request, res: Response) => {
       return;
     }
 
-    const data = await response.json() as { embeddings?: Array<{ values: number[] }> };
+    const data = (await response.json()) as { embeddings?: Array<{ values: number[] }> };
     const embeddings = data.embeddings?.map((e) => e.values) || [];
     res.json({ embeddings });
-
   } catch (error) {
     console.error('Embedding 오류:', error);
     res.status(500).json({ error: 'Embedding 처리 중 오류가 발생했습니다' });
@@ -212,9 +209,9 @@ app.post('/api/advisory', aiLimiter, async (req: Request, res: Response) => {
           systemInstruction: { parts: [{ text: systemInstruction }] },
           contents: [{ parts: [{ text: contents }] }],
           generationConfig: {
-            responseMimeType: 'application/json'
-          }
-        })
+            responseMimeType: 'application/json',
+          },
+        }),
       }
     );
 
@@ -225,10 +222,11 @@ app.post('/api/advisory', aiLimiter, async (req: Request, res: Response) => {
       return;
     }
 
-    const data = await response.json() as { candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }> };
+    const data = (await response.json()) as {
+      candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
+    };
     const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
     res.json({ text });
-
   } catch (error) {
     console.error('AI 조언 오류:', error);
     res.status(500).json({ error: 'AI 조언 생성 중 오류가 발생했습니다' });

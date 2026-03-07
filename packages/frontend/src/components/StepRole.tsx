@@ -26,7 +26,9 @@ export function StepRole({ onSelect }: StepRoleProps) {
           </div>
           <h3 className="text-xl font-semibold text-slate-900 mb-2">공급자 (매출)</h3>
           <p className="text-sm text-slate-500 text-center">
-            세금계산서를 발급하고<br />매출세액을 신고하는 사업자
+            세금계산서를 발급하고
+            <br />
+            매출세액을 신고하는 사업자
           </p>
         </button>
 
@@ -40,7 +42,9 @@ export function StepRole({ onSelect }: StepRoleProps) {
           </div>
           <h3 className="text-xl font-semibold text-slate-900 mb-2">공급받는자 (매입)</h3>
           <p className="text-sm text-slate-500 text-center">
-            세금계산서를 수취하고<br />매입세액 공제를 받는 사업자
+            세금계산서를 수취하고
+            <br />
+            매입세액 공제를 받는 사업자
           </p>
         </button>
       </div>

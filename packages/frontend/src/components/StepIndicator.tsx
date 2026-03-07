@@ -22,17 +22,29 @@ export function StepIndicator({ currentStep }: StepIndicatorProps) {
         const isCurrent = currentStep === s.step;
         return (
           <div key={s.step} className="flex flex-col items-center">
-            <div className={`
+            <div
+              className={`
               w-8 h-8 rounded-full flex items-center justify-center border-2 z-10 transition-all duration-300
-              ${isCompleted ? 'bg-blue-600 border-blue-600 text-white'
-                : isCurrent ? 'bg-white border-blue-600 text-blue-600'
-                : 'bg-white border-slate-300 text-slate-300'}
-            `}>
-              {isCompleted ? <Check className="w-5 h-5" /> : <span className="text-xs font-bold">{idx + 1}</span>}
+              ${
+                isCompleted
+                  ? 'bg-blue-600 border-blue-600 text-white'
+                  : isCurrent
+                    ? 'bg-white border-blue-600 text-blue-600'
+                    : 'bg-white border-slate-300 text-slate-300'
+              }
+            `}
+            >
+              {isCompleted ? (
+                <Check className="w-5 h-5" />
+              ) : (
+                <span className="text-xs font-bold">{idx + 1}</span>
+              )}
             </div>
-            <span className={`text-xs mt-2 font-medium transition-colors duration-300
+            <span
+              className={`text-xs mt-2 font-medium transition-colors duration-300
               ${isCurrent ? 'text-blue-600' : 'text-slate-400'}
-            `}>
+            `}
+            >
               {s.label}
             </span>
           </div>

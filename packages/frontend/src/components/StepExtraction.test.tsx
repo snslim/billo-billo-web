@@ -13,7 +13,7 @@ describe('StepExtraction', () => {
     receiverRegNo: '098-76-54321',
     date: '2024-12-15',
     supplyAmount: 1000000,
-    taxAmount: 100000
+    taxAmount: 100000,
   };
   const mockOnConfirm = vi.fn();
   const mockOnCancel = vi.fn();
