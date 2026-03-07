@@ -45,12 +45,10 @@ export interface AIAdvisoryResponse {
   deductionStatus: 'possible' | 'impossible' | 'check_required';
 }
 
-export const AppStep = {
-  ROLE_SELECTION: 0,
-  UPLOAD: 1,
-  EXTRACTION: 2,
-  VALIDATION: 3,
-  ADVISORY: 4
-} as const;
-
-export type AppStep = (typeof AppStep)[keyof typeof AppStep];
+export enum AppStep {
+  ROLE_SELECTION = 0,
+  UPLOAD = 1,
+  EXTRACTION = 2,
+  VALIDATION = 3,
+  ADVISORY = 4,
+}
