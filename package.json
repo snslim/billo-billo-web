@@ -12,9 +12,14 @@
     "dev:backend": "npm run dev -w @billo-billo/backend",
     "build": "npm run build -w @billo-billo/frontend && npm run build -w @billo-billo/backend",
     "test": "npm test -w @billo-billo/backend && npm test -w @billo-billo/frontend",
-    "test:coverage": "npm run test:coverage -w @billo-billo/backend && npm run test:coverage -w @billo-billo/frontend"
+    "test:coverage": "npm run test:coverage -w @billo-billo/backend && npm run test:coverage -w @billo-billo/frontend",
+    "lint": "eslint packages/*/src/",
+    "lint:fix": "eslint packages/*/src/ --fix"
   },
   "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^8.56.1",
+    "@typescript-eslint/parser": "^8.56.1",
+    "eslint": "^10.0.3",
     "typescript": "~5.9.3"
   }
 }
