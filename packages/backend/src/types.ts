@@ -6,7 +6,7 @@ export interface InvoiceData {
   supplierRegNo: string;
   supplierName: string;
   receiverRegNo: string;
-  receiverName: string;
+  receiverName?: string;
   date: string;
   supplyAmount: number;
   taxAmount: number;
