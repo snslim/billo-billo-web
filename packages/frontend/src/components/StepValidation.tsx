@@ -66,11 +66,8 @@ export const StepValidation = ({ data, role, onProceed }: Props) => {
     };
   }, [data, role]);
 
-  const toggleAnswer = (key: ChecklistKey) => {
-    setUserAnswers((prev) => {
-      const record = prev as unknown as Record<string, ChecklistAnswer>;
-      return { ...prev, [key]: record[key] === 'yes' ? 'no' : 'yes' };
-    });
+  const setAnswer = (key: ChecklistKey, value: ChecklistAnswer) => {
+    setUserAnswers((prev) => ({ ...prev, [key]: value }));
   };
 
   // 자동 확인 항목 표시용 컴포넌트
@@ -130,53 +127,67 @@ export const StepValidation = ({ data, role, onProceed }: Props) => {
     );
   };
 
-  // 사용자 체크리스트 카드 컴포넌트
+  // 사용자 체크리스트 카드 컴포넌트 — 예/아니오 버튼 방식 (3-state)
   const ChecklistCard = ({
     title,
     description,
-    checked,
-    onChange,
+    answer,
+    onAnswer,
     legalHint,
     subText,
   }: {
     title: string;
     description: string;
-    checked: boolean;
-    onChange: () => void;
+    answer: ChecklistAnswer;
+    onAnswer: (value: ChecklistAnswer) => void;
     legalHint?: string;
     subText?: string;
-  }) => (
-    <div
-      onClick={onChange}
-      className={`relative p-4 rounded-xl border-2 transition-all cursor-pointer hover:shadow-md
-        ${checked ? 'border-blue-500 bg-blue-50/30' : 'border-slate-200 bg-white hover:border-slate-300'}`}
-    >
-      <div className="flex items-start space-x-3">
-        <div
-          className={`mt-0.5 w-5 h-5 rounded border flex items-center justify-center transition-colors ${checked ? 'bg-blue-600 border-blue-600' : 'bg-white border-slate-300'}`}
-        >
-          {checked && <CheckCircle2 className="w-3.5 h-3.5 text-white" />}
+  }) => {
+    // 카드 테두리 색상: 미응답 기본, 응답 완료 시 파란색
+    const borderClass =
+      answer === 'unanswered' ? 'border-slate-200' : 'border-blue-300 bg-blue-50/20';
+
+    return (
+      <div className={`p-4 rounded-xl border-2 transition-all ${borderClass}`}>
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <h4 className="text-sm font-bold text-slate-800">{title}</h4>
+            <p className="text-xs text-slate-500 mt-1 leading-relaxed">{description}</p>
+          </div>
+          {/* 예/아니오 버튼 */}
+          <div className="flex gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={() => onAnswer(answer === 'yes' ? 'unanswered' : 'yes')}
+              className={`px-4 py-2 text-sm font-semibold rounded-lg border transition-all
+                ${answer === 'yes' ? 'bg-blue-600 text-white border-blue-600 shadow-sm' : 'bg-white text-blue-600 border-blue-200 hover:bg-blue-50'}`}
+            >
+              예
+            </button>
+            <button
+              type="button"
+              onClick={() => onAnswer(answer === 'no' ? 'unanswered' : 'no')}
+              className={`px-4 py-2 text-sm font-semibold rounded-lg border transition-all
+                ${answer === 'no' ? 'bg-slate-600 text-white border-slate-600 shadow-sm' : 'bg-white text-slate-400 border-slate-300 hover:bg-slate-50'}`}
+            >
+              아니오
+            </button>
+          </div>
         </div>
-        <div>
-          <h4 className={`text-sm font-bold ${checked ? 'text-blue-800' : 'text-slate-700'}`}>
-            {title}
-          </h4>
-          <p className="text-xs text-slate-500 mt-1 leading-relaxed">{description}</p>
-          {subText && (
-            <p className="text-[11px] text-slate-400 mt-2 bg-slate-50 p-1.5 rounded border border-slate-100">
-              ※ {subText}
-            </p>
-          )}
-        </div>
+        {subText && (
+          <p className="text-[11px] text-slate-400 mt-2.5 bg-slate-50 p-1.5 rounded border border-slate-100">
+            ※ {subText}
+          </p>
+        )}
+        {legalHint && (
+          <div className="mt-3 pt-3 border-t border-slate-100 flex items-center text-[10px] text-slate-400">
+            <BadgeInfo className="w-3 h-3 mr-1.5 text-slate-400" />
+            <span>{legalHint}</span>
+          </div>
+        )}
       </div>
-      {legalHint && (
-        <div className="mt-3 pt-3 border-t border-slate-100 flex items-center text-[10px] text-slate-400">
-          <BadgeInfo className="w-3 h-3 mr-1.5 text-slate-400" />
-          <span>{legalHint}</span>
-        </div>
-      )}
-    </div>
-  );
+    );
+  };
 
   if (!report) {
     return (
@@ -199,7 +210,7 @@ export const StepValidation = ({ data, role, onProceed }: Props) => {
     role === 'supplier' ? SUPPLIER_CHECKLIST : RECEIVER_CHECKLIST;
 
   return (
-    <div className="w-full max-w-xl mx-auto animate-fade-in pb-10">
+    <div className="w-full max-w-2xl mx-auto animate-fade-in pb-10">
       {/* 페이지 헤더 */}
       <div className="text-center mb-6">
         <h2 className="text-xl font-bold text-slate-900 flex items-center justify-center">
@@ -207,7 +218,7 @@ export const StepValidation = ({ data, role, onProceed }: Props) => {
           체크리스트
         </h2>
         <p className="text-xs text-slate-400 mt-2">
-          세금계산서의 주요 항목을 확인하고, 해당되는 사항을 체크해주세요.
+          세금계산서의 주요 항목을 확인하고, 아래 질문에 응답해주세요.
         </p>
       </div>
 
@@ -234,7 +245,7 @@ export const StepValidation = ({ data, role, onProceed }: Props) => {
           </div>
           <p className="text-xs text-slate-500 mt-2 flex items-center bg-blue-50/50 p-2 rounded-lg">
             <Sparkles className="w-3.5 h-3.5 mr-2 text-blue-500" />
-            해당되는 항목을 체크하면 AI가 맞춤 조언을 제공합니다.
+            응답 내용을 바탕으로 AI가 맞춤 조언을 제공합니다.
           </p>
         </div>
 
@@ -246,8 +257,8 @@ export const StepValidation = ({ data, role, onProceed }: Props) => {
                 key={item.key}
                 title={item.title}
                 description={item.description}
-                checked={record[item.key] === 'yes'}
-                onChange={() => toggleAnswer(item.key as ChecklistKey)}
+                answer={record[item.key] ?? 'unanswered'}
+                onAnswer={(value) => setAnswer(item.key as ChecklistKey, value)}
                 legalHint={item.legalHint}
                 subText={item.subText}
               />
@@ -267,11 +278,7 @@ export const StepValidation = ({ data, role, onProceed }: Props) => {
                 : 'bg-slate-900 hover:bg-slate-800 text-white hover:shadow-lg hover:scale-[1.01]'
             }`}
         >
-          <span>
-            {hasAutoCheckIssue
-              ? '확인 필요 항목이 있습니다. AI 조언 보기'
-              : '체크 완료, AI 세무 비서 연결'}
-          </span>
+          <span>AI 세무 조언 받기</span>
           <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
         </button>
       </div>
