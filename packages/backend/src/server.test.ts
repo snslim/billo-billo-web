@@ -137,8 +137,11 @@ describe('Server API', () => {
         });
 
       expect(response.status).toBe(200);
-      expect(response.body).toHaveProperty('docType');
-      expect(response.body).toHaveProperty('supplierRegNo');
+      expect(response.body).toHaveProperty('data');
+      expect(response.body.data).toHaveProperty('docType');
+      expect(response.body.data).toHaveProperty('supplierRegNo');
+      expect(response.body).toHaveProperty('confidence');
+      expect(response.body).toHaveProperty('parseErrors');
     });
 
     it('Upstage API 오류를 처리한다', async () => {

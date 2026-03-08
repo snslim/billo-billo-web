@@ -105,8 +105,8 @@ app.post('/api/ocr', ocrLimiter, upload.single('file'), async (req: Request, res
     }
 
     const rawData = await response.json();
-    const invoiceData = parseUpstageResponse(rawData);
-    res.json(invoiceData);
+    const ocrResult = parseUpstageResponse(rawData);
+    res.json(ocrResult);
   } catch (error) {
     console.error('OCR 처리 오류:', error);
     res.status(500).json({ error: 'OCR 처리 중 오류가 발생했습니다' });

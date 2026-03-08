@@ -1,4 +1,11 @@
-import type { InvoiceData, DocType } from './types.js';
+import type {
+  InvoiceData,
+  DocType,
+  OcrResult,
+  ConfidenceLevel,
+  FieldConfidence,
+  OcrParseError,
+} from './types.js';
 
 interface UpstageResponse {
   text?: string;
@@ -14,7 +21,19 @@ function isUpstageResponse(value: unknown): value is UpstageResponse {
   return typeof value === 'object' && value !== null && ('text' in value || 'pages' in value);
 }
 
-export const parseUpstageResponse = (response: unknown): InvoiceData => {
+export const parseUpstageResponse = (response: unknown): OcrResult => {
+  const parseErrors: OcrParseError[] = [];
+  const confidence: FieldConfidence = {
+    docType: 'missing',
+    isTaxInvoice: 'high',
+    supplierRegNo: 'missing',
+    supplierName: 'missing',
+    receiverRegNo: 'missing',
+    receiverName: 'missing',
+    date: 'missing',
+    supplyAmount: 'missing',
+    taxAmount: 'missing',
+  };
   if (!isUpstageResponse(response)) {
     throw new Error('유효하지 않은 Upstage OCR 응답 형식입니다');
   }
@@ -29,6 +48,7 @@ export const parseUpstageResponse = (response: unknown): InvoiceData => {
   } else if (normalizedText.includes('계산서') || normalizedText.includes('면세')) {
     docType = 'duty_free';
   }
+  confidence.docType = docType === 'unknown' ? 'low' : 'high';
 
   let supplierRegNo = '';
   let receiverRegNo = '';
@@ -42,14 +62,21 @@ export const parseUpstageResponse = (response: unknown): InvoiceData => {
   if (matches1.length >= 2) {
     supplierRegNo = matches1[0] || '';
     receiverRegNo = matches1[1] || '';
+    confidence.supplierRegNo = 'high';
+    confidence.receiverRegNo = 'high';
   } else if (matches2.length >= 1) {
     for (let i = 0; i < Math.min(matches2.length, 2); i++) {
       const raw = matches2[i]?.[1] || '';
       const digits = raw.replace(/[\s-]/g, '');
       if (digits.length >= 10) {
         const formatted = `${digits.slice(0, 3)}-${digits.slice(3, 5)}-${digits.slice(5, 10)}`;
-        if (i === 0) supplierRegNo = formatted;
-        else receiverRegNo = formatted;
+        if (i === 0) {
+          supplierRegNo = formatted;
+          confidence.supplierRegNo = 'medium';
+        } else {
+          receiverRegNo = formatted;
+          confidence.receiverRegNo = 'medium';
+        }
       }
     }
   }
@@ -114,8 +141,14 @@ export const parseUpstageResponse = (response: unknown): InvoiceData => {
   };
 
   const labelNames = extractNameFromLabel(fullText);
-  if (labelNames[0]) supplierName = labelNames[0];
-  if (labelNames[1]) receiverName = labelNames[1];
+  if (labelNames[0]) {
+    supplierName = labelNames[0];
+    confidence.supplierName = 'high';
+  }
+  if (labelNames[1]) {
+    receiverName = labelNames[1];
+    confidence.receiverName = 'high';
+  }
 
   // 2순위: (주)/㈜/주식회사 접두사 패턴
   if (!supplierName) {
@@ -125,9 +158,11 @@ export const parseUpstageResponse = (response: unknown): InvoiceData => {
     const secondCompany = companyMatches[1];
     if (firstCompany) {
       supplierName = firstCompany.replace(/\s+/g, '');
+      confidence.supplierName = 'medium';
     }
     if (secondCompany && !receiverName) {
       receiverName = secondCompany.replace(/\s+/g, '');
+      confidence.receiverName = 'medium';
     }
   }
 
@@ -159,8 +194,10 @@ export const parseUpstageResponse = (response: unknown): InvoiceData => {
         if (businessKeywords.some((k) => word.includes(k)) && !excludeWords.includes(word)) {
           if (!supplierName) {
             supplierName = word;
+            confidence.supplierName = 'low';
           } else if (!receiverName && word !== supplierName) {
             receiverName = word;
+            confidence.receiverName = 'low';
           }
         }
       }
@@ -176,8 +213,10 @@ export const parseUpstageResponse = (response: unknown): InvoiceData => {
       if (name && !excludeWords.includes(name) && name.length >= 2) {
         if (!supplierName) {
           supplierName = name;
+          confidence.supplierName = 'low';
         } else if (!receiverName && name !== supplierName) {
           receiverName = name;
+          confidence.receiverName = 'low';
         }
       }
     }
@@ -207,6 +246,8 @@ export const parseUpstageResponse = (response: unknown): InvoiceData => {
         if (day === 'I') day = '1';
         date = `${year}-${month}-${day.padStart(2, '0')}`;
       }
+      // 첫 번째 패턴(년월일)은 high, 나머지는 medium
+      confidence.date = datePatterns.indexOf(pattern) === 0 ? 'high' : 'medium';
       break;
     }
   }
@@ -223,6 +264,8 @@ export const parseUpstageResponse = (response: unknown): InvoiceData => {
 
   const uniqueAmounts = [...new Set(amounts)];
 
+  let amountConfidence: ConfidenceLevel = 'missing';
+
   if (uniqueAmounts.length >= 3) {
     const total = uniqueAmounts[0] || 0;
     const supply = uniqueAmounts[1] || 0;
@@ -231,9 +274,11 @@ export const parseUpstageResponse = (response: unknown): InvoiceData => {
     if (Math.abs(total - (supply + tax)) < 100) {
       supplyAmount = supply;
       taxAmount = tax;
+      amountConfidence = 'high';
     } else {
       supplyAmount = Math.round(total / 1.1);
       taxAmount = total - supplyAmount;
+      amountConfidence = 'medium';
     }
   } else if (uniqueAmounts.length >= 2) {
     const first = uniqueAmounts[0] || 0;
@@ -242,20 +287,38 @@ export const parseUpstageResponse = (response: unknown): InvoiceData => {
     if (Math.abs(second - first * 0.1) < first * 0.02) {
       supplyAmount = first;
       taxAmount = second;
+      amountConfidence = 'high';
     } else if (Math.abs(first - second * 1.1) < second * 0.02) {
       supplyAmount = second;
       taxAmount = first - second;
+      amountConfidence = 'medium';
     } else {
       supplyAmount = Math.round(first / 1.1);
       taxAmount = first - supplyAmount;
+      amountConfidence = 'low';
     }
   } else if (uniqueAmounts.length === 1) {
     const total = uniqueAmounts[0] || 0;
     supplyAmount = Math.round(total / 1.1);
     taxAmount = total - supplyAmount;
+    amountConfidence = 'low';
   }
+  confidence.supplyAmount = amountConfidence;
+  confidence.taxAmount = amountConfidence;
 
-  return {
+  // 필수 필드 미추출 시 에러 기록
+  if (!supplierRegNo)
+    parseErrors.push({
+      field: 'supplierRegNo',
+      reason: '공급자 사업자등록번호를 추출하지 못했습니다',
+    });
+  if (!supplierName)
+    parseErrors.push({ field: 'supplierName', reason: '공급자 상호를 추출하지 못했습니다' });
+  if (!date) parseErrors.push({ field: 'date', reason: '작성일자를 추출하지 못했습니다' });
+  if (supplyAmount === 0)
+    parseErrors.push({ field: 'supplyAmount', reason: '공급가액을 추출하지 못했습니다' });
+
+  const data: InvoiceData = {
     docType,
     isTaxInvoice: docType === 'general',
     supplierRegNo,
@@ -266,4 +329,6 @@ export const parseUpstageResponse = (response: unknown): InvoiceData => {
     supplyAmount,
     taxAmount,
   };
+
+  return { data, confidence, parseErrors };
 };
