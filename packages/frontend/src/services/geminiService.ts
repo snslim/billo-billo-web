@@ -58,9 +58,34 @@ const getRAGSystemPrompt = (
     criticalInstructions +=
       "- warnings 배열에 '지연 수취 가산세(0.5%)'와 '합계표 불성실 가산세'의 위험성을 반드시 경고하세요.\n";
   } else if (role === 'supplier' && isSupplierAnswers(userAnswers)) {
+    if (userAnswers.requiredFieldsCorrect === 'no') {
+      criticalInstructions +=
+        "- 사용자가 '필요적 기재사항이 부정확'하다고 응답했습니다. 부가가치세법 §32④에 따른 수정세금계산서 발급 절차를 안내하고, 미수정 시 가산세 위험을 경고하세요.\n";
+    }
+
+    if (userAnswers.issuedOnTime === 'no') {
+      criticalInstructions +=
+        "- 사용자가 '공급시기 이후 발급'을 시인했습니다. 부가가치세법 §60②에 따라 공급가액의 1% 지연발급 가산세가 부과됨을 경고하세요. 다만 공급시기가 속하는 과세기간 내 발급 시 1%, 경과 시 2%임을 구분하세요.\n";
+    }
+
+    if (userAnswers.isZeroRate === 'yes') {
+      criticalInstructions +=
+        "- 사용자가 '영세율 적용 대상'임을 확인했습니다. §24에 따른 영세율 적용 요건과 영세율 첨부서류(수출신고필증, 외화입금증명서 등) 제출 의무를 안내하세요. 세액란이 0원이어야 함을 확인하세요.\n";
+    }
+
+    if (userAnswers.needsCorrection === 'yes') {
+      criticalInstructions +=
+        "- 사용자가 '수정세금계산서 발급 필요'를 확인했습니다. §32④에 따른 수정 사유별(기재사항 착오, 공급가액 변동, 환입, 계약 해제) 발급 방법과 기한을 구체적으로 안내하세요.\n";
+    }
+
     if (userAnswers.transmittedOnTime === 'no') {
       criticalInstructions +=
-        "- 사용자가 '국세청 전송 기한 경과'를 시인했습니다. 지연전송 가산세 또는 미전송 가산세에 대해 강력히 경고하세요.\n";
+        "- 사용자가 '국세청 전송 기한 경과'를 시인했습니다. 시행령 §68에 따른 전송 기한(발급일 다음 날)과 지연전송/미전송 가산세를 강력히 경고하세요.\n";
+    }
+
+    if (userAnswers.summaryTableReady === 'no') {
+      criticalInstructions +=
+        "- 사용자가 '매출처별 합계표 미준비'를 시인했습니다. §54에 따라 미제출 또는 부실기재 시 가산세가 부과됨을 경고하세요.\n";
     }
   }
 
@@ -119,12 +144,19 @@ export const getTaxAdvice = async (
     queryParts.push('매입자 지연수취 가산세 제60조');
   }
 
-  if (
-    role === 'supplier' &&
-    isSupplierAnswers(userAnswers) &&
-    userAnswers.transmittedOnTime === 'no'
-  ) {
-    queryParts.push('세금계산서 전송 기한 경과 가산세');
+  if (role === 'supplier' && isSupplierAnswers(userAnswers)) {
+    if (userAnswers.requiredFieldsCorrect === 'no')
+      queryParts.push('수정세금계산서 발급 필요적 기재사항 착오 부가가치세법 제32조');
+    if (userAnswers.issuedOnTime === 'no')
+      queryParts.push('지연발급 가산세 공급시기 다음달 10일 부가가치세법 제60조');
+    if (userAnswers.isZeroRate === 'yes')
+      queryParts.push('영세율 세금계산서 수출 외화획득 첨부서류 부가가치세법 제24조');
+    if (userAnswers.needsCorrection === 'yes')
+      queryParts.push('수정세금계산서 사유별 발급 기재사항착오 공급가액변동 환입 제32조');
+    if (userAnswers.transmittedOnTime === 'no')
+      queryParts.push('전자세금계산서 전송 기한 경과 가산세 시행령 제68조');
+    if (userAnswers.summaryTableReady === 'no')
+      queryParts.push('매출처별 세금계산서 합계표 미제출 가산세 제54조');
   }
 
   const ragQuery = queryParts.join(' ') || '세금계산서 발급 및 수취 시 유의사항';
