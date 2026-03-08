@@ -135,6 +135,7 @@ export const StepValidation = ({ data, role, onProceed }: Props) => {
     onAnswer,
     legalHint,
     subText,
+    highlight,
   }: {
     title: string;
     description: string;
@@ -142,13 +143,23 @@ export const StepValidation = ({ data, role, onProceed }: Props) => {
     onAnswer: (value: ChecklistAnswer) => void;
     legalHint?: string;
     subText?: string;
+    highlight?: { message: string };
   }) => {
-    // 카드 테두리 색상: 미응답 기본, 응답 완료 시 파란색
-    const borderClass =
-      answer === 'unanswered' ? 'border-slate-200' : 'border-blue-300 bg-blue-50/20';
+    // 카드 테두리 색상: 하이라이트 > 응답 완료 > 미응답 기본
+    const borderClass = highlight
+      ? 'border-amber-400 bg-amber-50/30'
+      : answer === 'unanswered'
+        ? 'border-slate-200'
+        : 'border-blue-300 bg-blue-50/20';
 
     return (
       <div className={`p-4 rounded-xl border-2 transition-all ${borderClass}`}>
+        {highlight && (
+          <div className="flex items-center text-xs text-amber-700 bg-amber-100 px-2.5 py-1.5 rounded-lg mb-3 font-medium">
+            <AlertTriangle className="w-3.5 h-3.5 mr-1.5 shrink-0" />
+            {highlight.message}
+          </div>
+        )}
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <h4 className="text-sm font-bold text-slate-800">{title}</h4>
@@ -252,6 +263,14 @@ export const StepValidation = ({ data, role, onProceed }: Props) => {
         <div className="grid grid-cols-1 gap-3">
           {checklistItems.map((item) => {
             const record = userAnswers as unknown as Record<string, ChecklistAnswer>;
+            // 영세율 세금계산서일 때 isZeroRate 항목 강조
+            const highlight =
+              item.key === 'isZeroRate' && data.docType === 'zero_rate'
+                ? {
+                    message:
+                      '이 세금계산서는 영세율로 발급되었습니다. 영세율 첨부서류를 확인하세요.',
+                  }
+                : undefined;
             return (
               <ChecklistCard
                 key={item.key}
@@ -261,6 +280,7 @@ export const StepValidation = ({ data, role, onProceed }: Props) => {
                 onAnswer={(value) => setAnswer(item.key as ChecklistKey, value)}
                 legalHint={item.legalHint}
                 subText={item.subText}
+                highlight={highlight}
               />
             );
           })}
