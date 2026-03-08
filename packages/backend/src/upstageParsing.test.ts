@@ -239,6 +239,193 @@ describe('parseUpstageResponse', () => {
     });
   });
 
+  describe('레이블 기반 상호명 추출', () => {
+    it('같은 줄의 "상호: 값" 패턴에서 추출한다', () => {
+      const response = {
+        text: '세금계산서\n상호: 테스트상사\n공급받는자\n상호: 고객주식회사',
+      };
+      const { data, confidence } = parseUpstageResponse(response);
+      expect(data.supplierName).toBe('테스트상사');
+      expect(data.receiverName).toBe('고객주식회사');
+      expect(confidence.supplierName).toBe('high');
+      expect(confidence.receiverName).toBe('high');
+    });
+
+    it('다음 줄에서 상호명을 추출한다', () => {
+      const response = {
+        text: '세금계산서\n상호\n대한무역\n공급받는자\n상호\n서울상사',
+      };
+      const { data, confidence } = parseUpstageResponse(response);
+      expect(data.supplierName).toBe('대한무역');
+      expect(data.receiverName).toBe('서울상사');
+      expect(confidence.supplierName).toBe('high');
+    });
+
+    it('"상호(법인명)" 레이블 변형을 처리한다', () => {
+      const response = {
+        text: '세금계산서\n상 호(법인명): 빌런즈산업',
+      };
+      const { data } = parseUpstageResponse(response);
+      expect(data.supplierName).toBe('빌런즈산업');
+    });
+
+    it('레이블 뒤 "성명", "대표자" 등 후행 레이블을 제거한다', () => {
+      const response = {
+        text: '세금계산서\n상호: 테스트기업 성명 홍길동',
+      };
+      const { data } = parseUpstageResponse(response);
+      expect(data.supplierName).toBe('테스트기업');
+    });
+
+    it('레이블 값이 제외어이면 다음 줄에서 추출한다', () => {
+      const response = {
+        text: '세금계산서\n상호\n등록번호\n공급자\n빌런즈세무',
+      };
+      const { data } = parseUpstageResponse(response);
+      // "등록번호"는 labelExclude에 포함 → 스킵, 키워드 fallback으로 추출
+      expect(data.supplierName).toBe('빌런즈세무');
+    });
+  });
+
+  describe('confidence 할당', () => {
+    it('표준 형식 등록번호는 high confidence를 받는다', () => {
+      const response = {
+        text: '세금계산서\n123-45-67890\n098-76-54321',
+      };
+      const { confidence } = parseUpstageResponse(response);
+      expect(confidence.supplierRegNo).toBe('high');
+      expect(confidence.receiverRegNo).toBe('high');
+    });
+
+    it('등록번호 키워드 형식은 medium confidence를 받는다', () => {
+      const response = {
+        text: '등록번호 1234567890',
+      };
+      const { confidence } = parseUpstageResponse(response);
+      expect(confidence.supplierRegNo).toBe('medium');
+    });
+
+    it('등록번호가 없으면 missing confidence이다', () => {
+      const response = { text: '세금계산서\n상호: 테스트' };
+      const { confidence } = parseUpstageResponse(response);
+      expect(confidence.supplierRegNo).toBe('missing');
+      expect(confidence.receiverRegNo).toBe('missing');
+    });
+
+    it('YYYY년 MM월 DD일 날짜는 high confidence를 받는다', () => {
+      const response = { text: '2024년 3월 15일' };
+      const { confidence } = parseUpstageResponse(response);
+      expect(confidence.date).toBe('high');
+    });
+
+    it('YYYY MM DD 날짜는 medium confidence를 받는다', () => {
+      const response = { text: '2024 5 7' };
+      const { confidence } = parseUpstageResponse(response);
+      expect(confidence.date).toBe('medium');
+    });
+
+    it('날짜가 없으면 missing confidence이다', () => {
+      const response = { text: '세금계산서' };
+      const { confidence } = parseUpstageResponse(response);
+      expect(confidence.date).toBe('missing');
+    });
+
+    it('문서 유형이 unknown이면 docType confidence가 low이다', () => {
+      const response = { text: '영수증' };
+      const { confidence } = parseUpstageResponse(response);
+      expect(confidence.docType).toBe('low');
+    });
+
+    it('일반 세금계산서는 docType confidence가 high이다', () => {
+      const response = { text: '전자세금계산서' };
+      const { confidence } = parseUpstageResponse(response);
+      expect(confidence.docType).toBe('high');
+    });
+
+    it('3개 금액이 일치하면 amount confidence가 high이다', () => {
+      const response = {
+        text: '합계금액: 11,000,000\n공급가액: 10,000,000\n세액: 1,000,000',
+      };
+      const { confidence } = parseUpstageResponse(response);
+      expect(confidence.supplyAmount).toBe('high');
+      expect(confidence.taxAmount).toBe('high');
+    });
+
+    it('단일 금액만 있으면 amount confidence가 low이다', () => {
+      const response = {
+        text: '합계금액: 11,000,000',
+      };
+      const { confidence } = parseUpstageResponse(response);
+      expect(confidence.supplyAmount).toBe('low');
+      expect(confidence.taxAmount).toBe('low');
+    });
+  });
+
+  describe('parseErrors 기록', () => {
+    it('모든 필수 필드가 있으면 parseErrors가 비어있다', () => {
+      const response = {
+        text: `전자세금계산서
+        123-45-67890 098-76-54321
+        상호: 테스트기업
+        2024년 3월 15일
+        공급가액: 10,000,000 세액: 1,000,000 합계: 11,000,000`,
+      };
+      const { parseErrors } = parseUpstageResponse(response);
+      expect(parseErrors).toHaveLength(0);
+    });
+
+    it('등록번호 누락 시 parseError를 기록한다', () => {
+      const response = {
+        text: '세금계산서\n상호: 테스트기업\n2024년 3월 15일\n합계: 11,000,000\n공급가액: 10,000,000\n세액: 1,000,000',
+      };
+      const { parseErrors } = parseUpstageResponse(response);
+      const regNoError = parseErrors.find((e) => e.field === 'supplierRegNo');
+      expect(regNoError).toBeDefined();
+      expect(regNoError?.reason).toContain('사업자등록번호');
+    });
+
+    it('상호 누락 시 parseError를 기록한다', () => {
+      const response = {
+        text: '세금계산서\n123-45-67890\n2024년 3월 15일\n합계: 11,000,000\n공급가액: 10,000,000\n세액: 1,000,000',
+      };
+      const { parseErrors } = parseUpstageResponse(response);
+      const nameError = parseErrors.find((e) => e.field === 'supplierName');
+      expect(nameError).toBeDefined();
+      expect(nameError?.reason).toContain('상호');
+    });
+
+    it('날짜 누락 시 parseError를 기록한다', () => {
+      const response = {
+        text: '세금계산서\n123-45-67890\n상호: 테스트기업\n합계: 11,000,000\n공급가액: 10,000,000\n세액: 1,000,000',
+      };
+      const { parseErrors } = parseUpstageResponse(response);
+      const dateError = parseErrors.find((e) => e.field === 'date');
+      expect(dateError).toBeDefined();
+      expect(dateError?.reason).toContain('작성일자');
+    });
+
+    it('금액 누락 시 parseError를 기록한다', () => {
+      const response = {
+        text: '세금계산서\n123-45-67890\n상호: 테스트기업\n2024년 3월 15일',
+      };
+      const { parseErrors } = parseUpstageResponse(response);
+      const amountError = parseErrors.find((e) => e.field === 'supplyAmount');
+      expect(amountError).toBeDefined();
+      expect(amountError?.reason).toContain('공급가액');
+    });
+
+    it('모든 필드 누락 시 4개 parseError를 기록한다', () => {
+      const response = { text: '세금계산서' };
+      const { parseErrors } = parseUpstageResponse(response);
+      expect(parseErrors.length).toBe(4);
+      const fields = parseErrors.map((e) => e.field);
+      expect(fields).toContain('supplierRegNo');
+      expect(fields).toContain('supplierName');
+      expect(fields).toContain('date');
+      expect(fields).toContain('supplyAmount');
+    });
+  });
+
   describe('엣지 케이스', () => {
     it('빈 응답을 거부한다', () => {
       const response = {};
