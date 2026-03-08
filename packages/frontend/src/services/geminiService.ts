@@ -13,7 +13,7 @@ const MOCK_ADVISORY_RESPONSE: AIAdvisoryResponse = {
   deductionStatus: 'check_required',
 };
 
-const getRAGSystemPrompt = (
+export const getRAGSystemPrompt = (
   role: UserRole,
   dataJson: string,
   issues: string,
