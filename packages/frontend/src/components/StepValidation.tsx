@@ -5,7 +5,10 @@ import type {
   ValidationReport,
   ValidationResult,
   UserChecklistAnswers,
+  ChecklistAnswer,
+  ChecklistKey,
 } from '../types';
+import { createDefaultAnswers, isSupplierAnswers } from '../types';
 import { validateInvoiceAsync } from '../services/validationService';
 import {
   CheckCircle2,
@@ -27,12 +30,7 @@ interface Props {
 
 export const StepValidation = ({ data, role, onProceed }: Props) => {
   const [report, setReport] = useState<ValidationReport | null>(null);
-  const [userAnswers, setUserAnswers] = useState<UserChecklistAnswers>({
-    transmittedOnTime: 'unanswered',
-    purposeForBusiness: 'unanswered',
-    preRegistration: 'unanswered',
-    specificNonDeductible: 'unanswered',
-  });
+  const [userAnswers, setUserAnswers] = useState<UserChecklistAnswers>(createDefaultAnswers(role));
 
   useEffect(() => {
     let isMounted = true;
@@ -46,11 +44,11 @@ export const StepValidation = ({ data, role, onProceed }: Props) => {
     };
   }, [data, role]);
 
-  const toggleAnswer = (key: keyof UserChecklistAnswers) => {
-    setUserAnswers((prev) => ({
-      ...prev,
-      [key]: prev[key] === 'yes' ? 'no' : 'yes',
-    }));
+  const toggleAnswer = (key: ChecklistKey) => {
+    setUserAnswers((prev) => {
+      const record = prev as unknown as Record<string, ChecklistAnswer>;
+      return { ...prev, [key]: record[key] === 'yes' ? 'no' : 'yes' };
+    });
   };
 
   const ValidationItem = ({
@@ -184,7 +182,7 @@ export const StepValidation = ({ data, role, onProceed }: Props) => {
       </div>
 
       <div className="grid grid-cols-1 gap-3">
-        {role === 'supplier' ? (
+        {role === 'supplier' && isSupplierAnswers(userAnswers) ? (
           <ChecklistCard
             title="전송 기한 내 국세청 전송 완료"
             description="발급일 기준 다음달 10일까지 국세청에 전송하셨나요?"
@@ -192,7 +190,7 @@ export const StepValidation = ({ data, role, onProceed }: Props) => {
             onChange={() => toggleAnswer('transmittedOnTime')}
             legalHint="미전송 시 가산세(0.5%~1%) 부과 대상"
           />
-        ) : (
+        ) : !isSupplierAnswers(userAnswers) ? (
           <>
             <ChecklistCard
               title="과세 사업을 위한 지출"
@@ -214,7 +212,7 @@ export const StepValidation = ({ data, role, onProceed }: Props) => {
               onChange={() => toggleAnswer('specificNonDeductible')}
             />
           </>
-        )}
+        ) : null}
       </div>
     </div>
   );
