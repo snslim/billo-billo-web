@@ -5,29 +5,29 @@ describe('parseUpstageResponse', () => {
   describe('문서 유형 감지', () => {
     it('일반 세금계산서를 감지한다', () => {
       const response = { text: '전자세금계산서\n공급자\n공급받는자' };
-      const result = parseUpstageResponse(response);
-      expect(result.docType).toBe('general');
-      expect(result.isTaxInvoice).toBe(true);
+      const { data } = parseUpstageResponse(response);
+      expect(data.docType).toBe('general');
+      expect(data.isTaxInvoice).toBe(true);
     });
 
     it('영세율 계산서를 감지한다', () => {
       const response = { text: '세금계산서\n영세율\n공급자' };
-      const result = parseUpstageResponse(response);
-      expect(result.docType).toBe('zero_rate');
-      expect(result.isTaxInvoice).toBe(false);
+      const { data } = parseUpstageResponse(response);
+      expect(data.docType).toBe('zero_rate');
+      expect(data.isTaxInvoice).toBe(false);
     });
 
     it('면세 계산서를 감지한다', () => {
       const response = { text: '계산서\n면세\n공급자' };
-      const result = parseUpstageResponse(response);
-      expect(result.docType).toBe('duty_free');
-      expect(result.isTaxInvoice).toBe(false);
+      const { data } = parseUpstageResponse(response);
+      expect(data.docType).toBe('duty_free');
+      expect(data.isTaxInvoice).toBe(false);
     });
 
     it('인식되지 않은 문서는 unknown을 반환한다', () => {
       const response = { text: '영수증\n금액' };
-      const result = parseUpstageResponse(response);
-      expect(result.docType).toBe('unknown');
+      const { data } = parseUpstageResponse(response);
+      expect(data.docType).toBe('unknown');
     });
   });
 
@@ -36,7 +36,7 @@ describe('parseUpstageResponse', () => {
       const response = {
         text: '공급자 등록번호: 123-45-67890\n공급받는자 등록번호: 098-76-54321',
       };
-      const result = parseUpstageResponse(response);
+      const { data: result } = parseUpstageResponse(response);
       expect(result.supplierRegNo).toBe('123-45-67890');
       expect(result.receiverRegNo).toBe('098-76-54321');
     });
@@ -45,7 +45,7 @@ describe('parseUpstageResponse', () => {
       const response = {
         text: '등록번호 1234567890\n등록번호 0987654321',
       };
-      const result = parseUpstageResponse(response);
+      const { data: result } = parseUpstageResponse(response);
       expect(result.supplierRegNo).toBe('123-45-67890');
       expect(result.receiverRegNo).toBe('098-76-54321');
     });
@@ -54,13 +54,13 @@ describe('parseUpstageResponse', () => {
       const response = {
         text: '등록번호 123 45 67890',
       };
-      const result = parseUpstageResponse(response);
+      const { data: result } = parseUpstageResponse(response);
       expect(result.supplierRegNo).toBe('123-45-67890');
     });
 
     it('등록번호가 없으면 빈 문자열을 반환한다', () => {
       const response = { text: '계산서' };
-      const result = parseUpstageResponse(response);
+      const { data: result } = parseUpstageResponse(response);
       expect(result.supplierRegNo).toBe('');
       expect(result.receiverRegNo).toBe('');
     });
@@ -71,7 +71,7 @@ describe('parseUpstageResponse', () => {
       const response = {
         text: '주식회사 빌런즈\n공급자',
       };
-      const result = parseUpstageResponse(response);
+      const { data: result } = parseUpstageResponse(response);
       expect(result.supplierName).toBe('주식회사빌런즈');
     });
 
@@ -79,7 +79,7 @@ describe('parseUpstageResponse', () => {
       const response = {
         text: '㈜삼성전자\n공급받는자',
       };
-      const result = parseUpstageResponse(response);
+      const { data: result } = parseUpstageResponse(response);
       expect(result.supplierName).toBe('㈜삼성전자');
     });
 
@@ -87,7 +87,7 @@ describe('parseUpstageResponse', () => {
       const response = {
         text: '(주)LG전자\n㈜삼성전자',
       };
-      const result = parseUpstageResponse(response);
+      const { data: result } = parseUpstageResponse(response);
       expect(result.supplierName).toBe('(주)LG전자');
     });
 
@@ -95,7 +95,7 @@ describe('parseUpstageResponse', () => {
       const response = {
         text: '상호\n빌런즈세무\n무역산업',
       };
-      const result = parseUpstageResponse(response);
+      const { data: result } = parseUpstageResponse(response);
       expect(result.supplierName).toBe('빌런즈세무');
     });
 
@@ -103,7 +103,7 @@ describe('parseUpstageResponse', () => {
       const response = {
         text: '홍길동 성명\n공급자',
       };
-      const result = parseUpstageResponse(response);
+      const { data: result } = parseUpstageResponse(response);
       expect(result.supplierName).toBe('홍길동');
     });
 
@@ -111,14 +111,14 @@ describe('parseUpstageResponse', () => {
       const response = {
         text: '상호\n공급자\n빌런즈세무',
       };
-      const result = parseUpstageResponse(response);
+      const { data: result } = parseUpstageResponse(response);
       expect(result.supplierName).toBe('빌런즈세무');
       expect(result.supplierName).not.toBe('공급자');
     });
 
     it('회사명이 없으면 빈 문자열을 반환한다', () => {
       const response = { text: '금액: 100,000' };
-      const result = parseUpstageResponse(response);
+      const { data: result } = parseUpstageResponse(response);
       expect(result.supplierName).toBe('');
     });
   });
@@ -126,43 +126,43 @@ describe('parseUpstageResponse', () => {
   describe('날짜 파싱', () => {
     it('YYYY년 MM월 DD일 형식을 파싱한다', () => {
       const response = { text: '작성일자 2024년 3월 15일' };
-      const result = parseUpstageResponse(response);
+      const { data: result } = parseUpstageResponse(response);
       expect(result.date).toBe('2024-03-15');
     });
 
     it('YYYY-MM-DD 형식을 파싱한다', () => {
       const response = { text: '2024-12-31 발행' };
-      const result = parseUpstageResponse(response);
+      const { data: result } = parseUpstageResponse(response);
       expect(result.date).toBe('2024-12-31');
     });
 
     it('YYYY MM DD 형식을 파싱한다', () => {
       const response = { text: '2024 5 7' };
-      const result = parseUpstageResponse(response);
+      const { data: result } = parseUpstageResponse(response);
       expect(result.date).toBe('2024-05-07');
     });
 
     it('한 자리 월과 일을 처리한다', () => {
       const response = { text: '2024년 1월 9일' };
-      const result = parseUpstageResponse(response);
+      const { data: result } = parseUpstageResponse(response);
       expect(result.date).toBe('2024-01-09');
     });
 
     it('특수 문자가 포함된 날짜를 처리한다', () => {
       const response = { text: '20○○ 12 25' };
-      const result = parseUpstageResponse(response);
+      const { data: result } = parseUpstageResponse(response);
       expect(result.date).toBe('2000-12-25');
     });
 
     it('I 문자를 1로 변환한다', () => {
       const response = { text: '2024 3 I' };
-      const result = parseUpstageResponse(response);
+      const { data: result } = parseUpstageResponse(response);
       expect(result.date).toBe('2024-03-01');
     });
 
     it('날짜가 없으면 빈 문자열을 반환한다', () => {
       const response = { text: '계산서' };
-      const result = parseUpstageResponse(response);
+      const { data: result } = parseUpstageResponse(response);
       expect(result.date).toBe('');
     });
   });
@@ -172,7 +172,7 @@ describe('parseUpstageResponse', () => {
       const response = {
         text: '합계금액: 11,000,000\n공급가액: 10,000,000\n세액: 1,000,000',
       };
-      const result = parseUpstageResponse(response);
+      const { data: result } = parseUpstageResponse(response);
       expect(result.supplyAmount).toBe(10000000);
       expect(result.taxAmount).toBe(1000000);
     });
@@ -181,7 +181,7 @@ describe('parseUpstageResponse', () => {
       const response = {
         text: '합계금액: 11,000,000\n공급가액: 8,000,000\n세액: 2,000,000',
       };
-      const result = parseUpstageResponse(response);
+      const { data: result } = parseUpstageResponse(response);
       expect(result.supplyAmount).toBe(10000000);
       expect(result.taxAmount).toBe(1000000);
     });
@@ -190,7 +190,7 @@ describe('parseUpstageResponse', () => {
       const response = {
         text: '공급가액: 5,000,000\n세액: 500,000',
       };
-      const result = parseUpstageResponse(response);
+      const { data: result } = parseUpstageResponse(response);
       expect(result.supplyAmount).toBe(5000000);
       expect(result.taxAmount).toBe(500000);
     });
@@ -199,7 +199,7 @@ describe('parseUpstageResponse', () => {
       const response = {
         text: '합계: 5,500,000\n공급가액: 5,000,000',
       };
-      const result = parseUpstageResponse(response);
+      const { data: result } = parseUpstageResponse(response);
       expect(result.supplyAmount).toBe(5000000);
       expect(result.taxAmount).toBe(500000);
     });
@@ -208,7 +208,7 @@ describe('parseUpstageResponse', () => {
       const response = {
         text: '금액: 11,000,000\n금액: 8,000,000',
       };
-      const result = parseUpstageResponse(response);
+      const { data: result } = parseUpstageResponse(response);
       expect(result.supplyAmount).toBe(10000000);
       expect(result.taxAmount).toBe(1000000);
     });
@@ -217,7 +217,7 @@ describe('parseUpstageResponse', () => {
       const response = {
         text: '합계금액: 11,000,000원',
       };
-      const result = parseUpstageResponse(response);
+      const { data: result } = parseUpstageResponse(response);
       expect(result.supplyAmount).toBe(10000000);
       expect(result.taxAmount).toBe(1000000);
     });
@@ -226,14 +226,14 @@ describe('parseUpstageResponse', () => {
       const response = {
         text: '금액: 100\n세액: 500\n합계: 11,000,000',
       };
-      const result = parseUpstageResponse(response);
+      const { data: result } = parseUpstageResponse(response);
       expect(result.supplyAmount).toBe(10000000);
       expect(result.taxAmount).toBe(1000000);
     });
 
     it('금액이 없으면 0을 반환한다', () => {
       const response = { text: '계산서' };
-      const result = parseUpstageResponse(response);
+      const { data: result } = parseUpstageResponse(response);
       expect(result.supplyAmount).toBe(0);
       expect(result.taxAmount).toBe(0);
     });
@@ -249,7 +249,7 @@ describe('parseUpstageResponse', () => {
 
     it('공백만 있는 응답을 처리한다', () => {
       const response = { text: '   \n\n  \t  ' };
-      const result = parseUpstageResponse(response);
+      const { data: result } = parseUpstageResponse(response);
       expect(result.docType).toBe('unknown');
     });
 
@@ -270,7 +270,7 @@ describe('parseUpstageResponse', () => {
         세액: 1,000,000
         합계금액: 11,000,000`,
       };
-      const result = parseUpstageResponse(response);
+      const { data: result } = parseUpstageResponse(response);
 
       expect(result.docType).toBe('general');
       expect(result.isTaxInvoice).toBe(true);
