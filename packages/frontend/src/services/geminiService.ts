@@ -1,4 +1,5 @@
 import type { InvoiceData, UserRole, AIAdvisoryResponse, UserChecklistAnswers } from '../types';
+import { isSupplierAnswers } from '../types';
 import { retrieveRelevantLawsByVector } from '../data/legalKnowledge';
 import type { LegalReference } from '../data/legalKnowledge';
 import { anonymizeInvoiceData } from '../utils/formatting';
@@ -23,7 +24,7 @@ const getRAGSystemPrompt = (
 
   let criticalInstructions = '';
 
-  if (role === 'receiver') {
+  if (role === 'receiver' && !isSupplierAnswers(userAnswers)) {
     criticalInstructions +=
       "- [필수 명시] summary의 첫 문장으로 다음을 명시하세요: '본 조언은 세금계산서 수취분에 한하며, 신용카드매출전표 발행공제나 의제매입세액 공제 등은 별도 검토 대상이므로 제외됩니다.'\n";
     criticalInstructions +=
@@ -56,7 +57,7 @@ const getRAGSystemPrompt = (
 
     criticalInstructions +=
       "- warnings 배열에 '지연 수취 가산세(0.5%)'와 '합계표 불성실 가산세'의 위험성을 반드시 경고하세요.\n";
-  } else if (role === 'supplier') {
+  } else if (role === 'supplier' && isSupplierAnswers(userAnswers)) {
     if (userAnswers.transmittedOnTime === 'no') {
       criticalInstructions +=
         "- 사용자가 '국세청 전송 기한 경과'를 시인했습니다. 지연전송 가산세 또는 미전송 가산세에 대해 강력히 경고하세요.\n";
@@ -106,7 +107,7 @@ export const getTaxAdvice = async (
 
   const queryParts = [...validationIssues];
 
-  if (role === 'receiver') {
+  if (role === 'receiver' && !isSupplierAnswers(userAnswers)) {
     if (userAnswers.purposeForBusiness === 'no')
       queryParts.push('사업 무관 지출 면세사업 관련 매입세액 불공제');
     if (userAnswers.preRegistration === 'yes')
@@ -118,7 +119,11 @@ export const getTaxAdvice = async (
     queryParts.push('매입자 지연수취 가산세 제60조');
   }
 
-  if (role === 'supplier' && userAnswers.transmittedOnTime === 'no') {
+  if (
+    role === 'supplier' &&
+    isSupplierAnswers(userAnswers) &&
+    userAnswers.transmittedOnTime === 'no'
+  ) {
     queryParts.push('세금계산서 전송 기한 경과 가산세');
   }
 

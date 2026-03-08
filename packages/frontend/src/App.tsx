@@ -15,12 +15,7 @@ function App() {
   const [file, setFile] = useState<File | null>(null);
   const [invoiceData, setInvoiceData] = useState<InvoiceData | null>(null);
   const [validationReport, setValidationReport] = useState<ValidationReport | null>(null);
-  const [userAnswers, setUserAnswers] = useState<UserChecklistAnswers>({
-    transmittedOnTime: 'unanswered',
-    purposeForBusiness: 'unanswered',
-    preRegistration: 'unanswered',
-    specificNonDeductible: 'unanswered',
-  });
+  const [userAnswers, setUserAnswers] = useState<UserChecklistAnswers | null>(null);
 
   const handleRoleSelect = (selectedRole: UserRole) => {
     setRole(selectedRole);
@@ -59,12 +54,7 @@ function App() {
     setFile(null);
     setInvoiceData(null);
     setValidationReport(null);
-    setUserAnswers({
-      transmittedOnTime: 'unanswered',
-      purposeForBusiness: 'unanswered',
-      preRegistration: 'unanswered',
-      specificNonDeductible: 'unanswered',
-    });
+    setUserAnswers(null);
   };
 
   const renderStep = () => {
@@ -87,7 +77,7 @@ function App() {
           <StepValidation data={invoiceData} role={role} onProceed={handleValidationProceed} />
         ) : null;
       case AppStep.ADVISORY:
-        return invoiceData && validationReport ? (
+        return invoiceData && validationReport && userAnswers ? (
           <StepAdvisory
             data={invoiceData}
             role={role}
