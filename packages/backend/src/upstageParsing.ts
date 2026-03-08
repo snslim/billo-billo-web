@@ -72,17 +72,66 @@ export const parseUpstageResponse = (response: unknown): InvoiceData => {
     '주소',
   ];
 
-  const companyPattern = /(?:\(주\)|㈜|주식회사)\s*[가-힣A-Za-z0-9]+/g;
-  const companyMatches = fullText.match(companyPattern) || [];
-  const firstCompany = companyMatches[0];
-  const secondCompany = companyMatches[1];
-  if (firstCompany) {
-    supplierName = firstCompany.replace(/\s+/g, '');
-  }
-  if (secondCompany) {
-    receiverName = secondCompany.replace(/\s+/g, '');
+  // 1순위: 양식 레이블 기반 추출 (세금계산서 표준 양식에서 "상호" 레이블 뒤의 값)
+  // 줄 단위로 처리하여 다른 섹션의 값이 섞이지 않도록 함
+  const labelExclude = new Set([
+    ...excludeWords,
+    '공급자',
+    '공급받는자',
+    '등록번호',
+    '사업자등록번호',
+    '업태',
+    '종목',
+    '작성일자',
+    '세금계산서',
+    '전자세금계산서',
+  ]);
+
+  const extractNameFromLabel = (text: string): string[] => {
+    const names: string[] = [];
+    const lines = text.split('\n');
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim();
+      if (!/상\s*호/.test(line)) continue;
+
+      // 같은 줄에서 "상호" 레이블 뒤의 값 추출
+      const afterLabel = line.replace(/.*상\s*호\s*[(법인명)]*\s*[:：]?\s*/, '').trim();
+      // "성명", "대표자" 등 후행 레이블 제거
+      const cleaned = afterLabel.replace(/\s*(성명|대표자|사업장|주소).*$/, '').trim();
+
+      if (cleaned.length >= 2 && !labelExclude.has(cleaned)) {
+        names.push(cleaned.replace(/\s+/g, ''));
+        continue;
+      }
+
+      // 같은 줄에 값이 없으면 다음 줄에서 시도
+      const nextLine = lines[i + 1]?.trim() || '';
+      if (nextLine.length >= 2 && !labelExclude.has(nextLine)) {
+        names.push(nextLine.replace(/\s+/g, ''));
+      }
+    }
+    return names;
+  };
+
+  const labelNames = extractNameFromLabel(fullText);
+  if (labelNames[0]) supplierName = labelNames[0];
+  if (labelNames[1]) receiverName = labelNames[1];
+
+  // 2순위: (주)/㈜/주식회사 접두사 패턴
+  if (!supplierName) {
+    const companyPattern = /(?:\(주\)|㈜|주식회사)\s*[가-힣A-Za-z0-9]+/g;
+    const companyMatches = fullText.match(companyPattern) || [];
+    const firstCompany = companyMatches[0];
+    const secondCompany = companyMatches[1];
+    if (firstCompany) {
+      supplierName = firstCompany.replace(/\s+/g, '');
+    }
+    if (secondCompany && !receiverName) {
+      receiverName = secondCompany.replace(/\s+/g, '');
+    }
   }
 
+  // 3순위: 사업 키워드 기반 (fallback)
   if (!supplierName) {
     const lines = fullText.split('\n');
     const businessKeywords = [
@@ -118,6 +167,7 @@ export const parseUpstageResponse = (response: unknown): InvoiceData => {
     }
   }
 
+  // 4순위: "홍길동 성명" 패턴 (개인사업자)
   if (!supplierName) {
     const namePattern = /([가-힣]{2,})\s*성명/g;
     const nameMatches = [...fullText.matchAll(namePattern)];
