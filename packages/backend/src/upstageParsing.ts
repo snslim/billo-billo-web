@@ -21,6 +21,90 @@ function isUpstageResponse(value: unknown): value is UpstageResponse {
   return typeof value === 'object' && value !== null && ('text' in value || 'pages' in value);
 }
 
+const FORM_LABELS = new Set([
+  '성명',
+  '법인명',
+  '대표자',
+  '사업장',
+  '주소',
+  '공급자',
+  '공급받는자',
+  '등록번호',
+  '사업자등록번호',
+  '업태',
+  '종목',
+  '작성일자',
+  '세금계산서',
+  '전자세금계산서',
+  '공급가액',
+  '합계금액',
+]);
+
+const BUSINESS_KEYWORDS = [
+  '기업',
+  '상사',
+  '산업',
+  '무역',
+  '물산',
+  '전자',
+  '건설',
+  '건축',
+  '부동산',
+  '자동차',
+  '부품',
+  '문구',
+  '식품',
+  '유통',
+  '물류',
+  '제약',
+  '화학',
+  '철강',
+  '섬유',
+  '인쇄',
+  '출판',
+  '통신',
+  '에너지',
+  '엔지니어링',
+  '테크',
+  '소프트',
+  '컨설팅',
+  '법인',
+  '약국',
+  '병원',
+  '의원',
+  '학원',
+];
+
+const DATE_PATTERNS = [
+  /(\d{4})\s*[년./-]\s*(\d{1,2})\s*[월./-]\s*(\d{1,2})/,
+  /(\d{4})\s+(\d{1,2})\s+(\d{1,2})/,
+  /(\d{4})\s+(\d{1,2})\s+[I1]/,
+  /20[○0-9]{2}\s+(\d{1,2})\s+(\d{1,2})/,
+];
+
+const extractNameFromLabel = (text: string): string[] => {
+  const names: string[] = [];
+  const lines = text.split('\n');
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (!/상\s*호/.test(line)) continue;
+
+    const afterLabel = line.replace(/.*상\s*호\s*(?:\(법인명\))?\s*[:：]?\s*/, '').trim();
+    const cleaned = afterLabel.replace(/\s*(성명|대표자|사업장|주소).*$/, '').trim();
+
+    if (cleaned.length >= 2 && !FORM_LABELS.has(cleaned)) {
+      names.push(cleaned.replace(/\s+/g, ''));
+      continue;
+    }
+
+    const nextLine = lines[i + 1]?.trim() || '';
+    if (nextLine.length >= 2 && !FORM_LABELS.has(nextLine)) {
+      names.push(nextLine.replace(/\s+/g, ''));
+    }
+  }
+  return names;
+};
+
 export const parseUpstageResponse = (response: unknown): OcrResult => {
   const parseErrors: OcrParseError[] = [];
   const confidence: FieldConfidence = {
@@ -43,7 +127,7 @@ export const parseUpstageResponse = (response: unknown): OcrResult => {
   let docType: DocType = 'unknown';
   if (normalizedText.includes('영세율')) {
     docType = 'zero_rate';
-  } else if (normalizedText.includes('세금계산서') || normalizedText.includes('전자세금계산서')) {
+  } else if (normalizedText.includes('세금계산서')) {
     docType = 'general';
   } else if (normalizedText.includes('계산서') || normalizedText.includes('면세')) {
     docType = 'duty_free';
@@ -84,62 +168,6 @@ export const parseUpstageResponse = (response: unknown): OcrResult => {
   let supplierName = '';
   let receiverName = '';
 
-  const excludeWords = [
-    '상',
-    '호',
-    '공',
-    '급',
-    '자',
-    '받',
-    '는',
-    '성명',
-    '법인명',
-    '대표자',
-    '사업장',
-    '주소',
-  ];
-
-  // 1순위: 양식 레이블 기반 추출 (세금계산서 표준 양식에서 "상호" 레이블 뒤의 값)
-  // 줄 단위로 처리하여 다른 섹션의 값이 섞이지 않도록 함
-  const labelExclude = new Set([
-    ...excludeWords,
-    '공급자',
-    '공급받는자',
-    '등록번호',
-    '사업자등록번호',
-    '업태',
-    '종목',
-    '작성일자',
-    '세금계산서',
-    '전자세금계산서',
-  ]);
-
-  const extractNameFromLabel = (text: string): string[] => {
-    const names: string[] = [];
-    const lines = text.split('\n');
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i].trim();
-      if (!/상\s*호/.test(line)) continue;
-
-      // 같은 줄에서 "상호" 레이블 뒤의 값 추출
-      const afterLabel = line.replace(/.*상\s*호\s*[(법인명)]*\s*[:：]?\s*/, '').trim();
-      // "성명", "대표자" 등 후행 레이블 제거
-      const cleaned = afterLabel.replace(/\s*(성명|대표자|사업장|주소).*$/, '').trim();
-
-      if (cleaned.length >= 2 && !labelExclude.has(cleaned)) {
-        names.push(cleaned.replace(/\s+/g, ''));
-        continue;
-      }
-
-      // 같은 줄에 값이 없으면 다음 줄에서 시도
-      const nextLine = lines[i + 1]?.trim() || '';
-      if (nextLine.length >= 2 && !labelExclude.has(nextLine)) {
-        names.push(nextLine.replace(/\s+/g, ''));
-      }
-    }
-    return names;
-  };
-
   const labelNames = extractNameFromLabel(fullText);
   if (labelNames[0]) {
     supplierName = labelNames[0];
@@ -150,7 +178,6 @@ export const parseUpstageResponse = (response: unknown): OcrResult => {
     confidence.receiverName = 'high';
   }
 
-  // 2순위: (주)/㈜/주식회사 접두사 패턴
   if (!supplierName) {
     const companyPattern = /(?:\(주\)|㈜|주식회사)\s*[가-힣A-Za-z0-9]+/g;
     const companyMatches = fullText.match(companyPattern) || [];
@@ -166,32 +193,15 @@ export const parseUpstageResponse = (response: unknown): OcrResult => {
     }
   }
 
-  // 3순위: 사업 키워드 기반 (fallback)
   if (!supplierName) {
     const lines = fullText.split('\n');
-    const businessKeywords = [
-      '자동차',
-      '부품',
-      '기업',
-      '상사',
-      '전자',
-      '물산',
-      '무역',
-      '산업',
-      '문구',
-      '부동산',
-      '빌런즈',
-      '세무',
-      '폼',
-      '쟁이',
-    ];
 
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i].trim();
 
       const koreanWords = line.match(/[가-힣]{3,}/g) || [];
       for (const word of koreanWords) {
-        if (businessKeywords.some((k) => word.includes(k)) && !excludeWords.includes(word)) {
+        if (BUSINESS_KEYWORDS.some((k) => word.includes(k)) && !FORM_LABELS.has(word)) {
           if (!supplierName) {
             supplierName = word;
             confidence.supplierName = 'low';
@@ -204,13 +214,12 @@ export const parseUpstageResponse = (response: unknown): OcrResult => {
     }
   }
 
-  // 4순위: "홍길동 성명" 패턴 (개인사업자)
   if (!supplierName) {
     const namePattern = /([가-힣]{2,})\s*성명/g;
     const nameMatches = [...fullText.matchAll(namePattern)];
     for (const match of nameMatches) {
       const name = match[1];
-      if (name && !excludeWords.includes(name) && name.length >= 2) {
+      if (name && !FORM_LABELS.has(name) && name.length >= 2) {
         if (!supplierName) {
           supplierName = name;
           confidence.supplierName = 'low';
@@ -224,14 +233,7 @@ export const parseUpstageResponse = (response: unknown): OcrResult => {
 
   let date = '';
 
-  const datePatterns = [
-    /(\d{4})\s*[년./-]\s*(\d{1,2})\s*[월./-]\s*(\d{1,2})/,
-    /(\d{4})\s+(\d{1,2})\s+(\d{1,2})/,
-    /(\d{4})\s+(\d{1,2})\s+[I1]/,
-    /20[○0-9]{2}\s+(\d{1,2})\s+(\d{1,2})/,
-  ];
-
-  for (const pattern of datePatterns) {
+  for (const pattern of DATE_PATTERNS) {
     const match = fullText.match(pattern);
     if (match) {
       if (pattern.source.includes('○')) {
@@ -246,8 +248,7 @@ export const parseUpstageResponse = (response: unknown): OcrResult => {
         if (day === 'I') day = '1';
         date = `${year}-${month}-${day.padStart(2, '0')}`;
       }
-      // 첫 번째 패턴(년월일)은 high, 나머지는 medium
-      confidence.date = datePatterns.indexOf(pattern) === 0 ? 'high' : 'medium';
+      confidence.date = DATE_PATTERNS.indexOf(pattern) === 0 ? 'high' : 'medium';
       break;
     }
   }
@@ -306,7 +307,6 @@ export const parseUpstageResponse = (response: unknown): OcrResult => {
   confidence.supplyAmount = amountConfidence;
   confidence.taxAmount = amountConfidence;
 
-  // 필수 필드 미추출 시 에러 기록
   if (!supplierRegNo)
     parseErrors.push({
       field: 'supplierRegNo',

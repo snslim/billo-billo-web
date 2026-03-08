@@ -69,10 +69,10 @@ describe('parseUpstageResponse', () => {
   describe('회사명 추출', () => {
     it('주식회사 접두사가 있는 회사명을 추출한다', () => {
       const response = {
-        text: '주식회사 빌런즈\n공급자',
+        text: '주식회사 한국전자\n공급자',
       };
       const { data: result } = parseUpstageResponse(response);
-      expect(result.supplierName).toBe('주식회사빌런즈');
+      expect(result.supplierName).toBe('주식회사한국전자');
     });
 
     it('㈜ 접두사가 있는 회사명을 추출한다', () => {
@@ -93,10 +93,10 @@ describe('parseUpstageResponse', () => {
 
     it('사업 키워드를 사용하여 회사명을 추출한다', () => {
       const response = {
-        text: '상호\n빌런즈세무\n무역산업',
+        text: '상호\n한국무역\n대성산업',
       };
       const { data: result } = parseUpstageResponse(response);
-      expect(result.supplierName).toBe('빌런즈세무');
+      expect(result.supplierName).toBe('한국무역');
     });
 
     it('성명 패턴에서 개인명을 추출한다', () => {
@@ -109,10 +109,10 @@ describe('parseUpstageResponse', () => {
 
     it('일반 단어는 회사명에서 제외한다', () => {
       const response = {
-        text: '상호\n공급자\n빌런즈세무',
+        text: '상호\n공급자\n대성건설',
       };
       const { data: result } = parseUpstageResponse(response);
-      expect(result.supplierName).toBe('빌런즈세무');
+      expect(result.supplierName).toBe('대성건설');
       expect(result.supplierName).not.toBe('공급자');
     });
 
@@ -263,10 +263,10 @@ describe('parseUpstageResponse', () => {
 
     it('"상호(법인명)" 레이블 변형을 처리한다', () => {
       const response = {
-        text: '세금계산서\n상 호(법인명): 빌런즈산업',
+        text: '세금계산서\n상 호(법인명): 대성산업',
       };
       const { data } = parseUpstageResponse(response);
-      expect(data.supplierName).toBe('빌런즈산업');
+      expect(data.supplierName).toBe('대성산업');
     });
 
     it('레이블 뒤 "성명", "대표자" 등 후행 레이블을 제거한다', () => {
@@ -279,11 +279,10 @@ describe('parseUpstageResponse', () => {
 
     it('레이블 값이 제외어이면 다음 줄에서 추출한다', () => {
       const response = {
-        text: '세금계산서\n상호\n등록번호\n공급자\n빌런즈세무',
+        text: '세금계산서\n상호\n등록번호\n공급자\n한국건설',
       };
       const { data } = parseUpstageResponse(response);
-      // "등록번호"는 labelExclude에 포함 → 스킵, 키워드 fallback으로 추출
-      expect(data.supplierName).toBe('빌런즈세무');
+      expect(data.supplierName).toBe('한국건설');
     });
   });
 
@@ -445,11 +444,11 @@ describe('parseUpstageResponse', () => {
         text: `전자세금계산서
         공급자
         사업자등록번호: 123-45-67890
-        상호: 주식회사 빌런즈
+        상호: 주식회사 한국전자
 
         공급받는자
         사업자등록번호: 098-76-54321
-        상호: ㈜세무쟁이
+        상호: ㈜대성산업
 
         작성일자: 2024년 12월 15일
 
@@ -463,7 +462,7 @@ describe('parseUpstageResponse', () => {
       expect(result.isTaxInvoice).toBe(true);
       expect(result.supplierRegNo).toBe('123-45-67890');
       expect(result.receiverRegNo).toBe('098-76-54321');
-      expect(result.supplierName).toBe('주식회사빌런즈');
+      expect(result.supplierName).toBe('주식회사한국전자');
       expect(result.date).toBe('2024-12-15');
       expect(result.supplyAmount).toBe(10000000);
       expect(result.taxAmount).toBe(1000000);

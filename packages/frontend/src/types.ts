@@ -14,7 +14,6 @@ export interface InvoiceData {
   taxAmount: number;
 }
 
-// OCR 추출 신뢰도
 export type ConfidenceLevel = 'high' | 'medium' | 'low' | 'missing';
 
 export type FieldConfidence = Record<keyof InvoiceData, ConfidenceLevel>;
@@ -25,7 +24,6 @@ export interface OcrParseError {
   rawText?: string;
 }
 
-// 백엔드 OCR 응답 타입
 export interface OcrResult {
   data: InvoiceData;
   confidence: FieldConfidence;
@@ -50,37 +48,31 @@ export interface ValidationReport {
 
 export type ChecklistAnswer = 'yes' | 'no' | 'unanswered';
 
-// 매입자(공급받는자) 체크리스트 — 매입세액 공제 판단용
 export interface ReceiverChecklistAnswers {
-  purposeForBusiness: ChecklistAnswer; // 사업 관련 지출인가?
-  specificNonDeductible: ChecklistAnswer; // 접대비 등 불공제 항목인가?
-  preRegistration: ChecklistAnswer; // 사업자등록 전 매입인가?
+  purposeForBusiness: ChecklistAnswer;
+  specificNonDeductible: ChecklistAnswer;
+  preRegistration: ChecklistAnswer;
 }
 
-// 공급자 체크리스트 — 발급 의무 이행 + 가산세 위험 판단용
 export interface SupplierChecklistAnswers {
-  requiredFieldsCorrect: ChecklistAnswer; // 필요적 기재사항이 정확한가?
-  issuedOnTime: ChecklistAnswer; // 공급시기에 맞게 발급했는가?
-  isZeroRate: ChecklistAnswer; // 영세율 적용 대상인가?
-  needsCorrection: ChecklistAnswer; // 수정세금계산서 발급이 필요한가?
-  transmittedOnTime: ChecklistAnswer; // 전자발급 후 기한 내 전송했는가?
-  summaryTableReady: ChecklistAnswer; // 매출처별 합계표 준비되었는가?
+  requiredFieldsCorrect: ChecklistAnswer;
+  issuedOnTime: ChecklistAnswer;
+  isZeroRate: ChecklistAnswer;
+  needsCorrection: ChecklistAnswer;
+  transmittedOnTime: ChecklistAnswer;
+  summaryTableReady: ChecklistAnswer;
 }
 
-// 역할에 따라 다른 체크리스트 사용
 export type UserChecklistAnswers = ReceiverChecklistAnswers | SupplierChecklistAnswers;
 
-// 타입 가드: 공급자 체크리스트인지 판별
 export function isSupplierAnswers(
   answers: UserChecklistAnswers
 ): answers is SupplierChecklistAnswers {
   return 'requiredFieldsCorrect' in answers;
 }
 
-// 양쪽 체크리스트의 키를 합친 타입 (UI에서 토글 함수에 사용)
 export type ChecklistKey = keyof ReceiverChecklistAnswers | keyof SupplierChecklistAnswers;
 
-// 역할에 따른 기본 체크리스트 응답 생성
 export function createDefaultAnswers(role: UserRole): UserChecklistAnswers {
   if (role === 'supplier') {
     return {

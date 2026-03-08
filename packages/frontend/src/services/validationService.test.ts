@@ -26,7 +26,7 @@ describe('validateInvoiceAsync', () => {
     docType: 'general',
     isTaxInvoice: true,
     supplierRegNo: '123-45-67890',
-    supplierName: '주식회사빌런즈',
+    supplierName: '주식회사한국전자',
     receiverRegNo: '098-76-54321',
     date: '2024-12-15',
     supplyAmount: 10000000,
