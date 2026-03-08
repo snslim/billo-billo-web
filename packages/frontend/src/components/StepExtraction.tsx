@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import type { InvoiceData, DocType } from '../types';
+import type { InvoiceData, DocType, OcrResult, FieldConfidence, ConfidenceLevel } from '../types';
 import { config } from '../config';
 import {
   AlertCircle,
@@ -28,7 +28,11 @@ interface InvoiceInputProps {
   type?: 'text' | 'number' | 'date' | 'currency';
   placeholder?: string;
   required?: boolean;
+  confidence?: ConfidenceLevel;
 }
+
+// 신뢰도가 낮은 필드인지 판별
+const isLowConfidence = (c?: ConfidenceLevel) => c === 'low' || c === 'missing';
 
 const InvoiceInput = ({
   label,
@@ -37,8 +41,10 @@ const InvoiceInput = ({
   type = 'text',
   placeholder = '',
   required = false,
+  confidence,
 }: InvoiceInputProps) => {
   const displayValue = type === 'currency' ? formatCurrency(value) : value;
+  const showWarning = isLowConfidence(confidence);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let val = e.target.value;
@@ -48,8 +54,13 @@ const InvoiceInput = ({
 
   return (
     <div className="group">
-      <label className="block text-xs font-semibold text-slate-500 mb-1.5">
+      <label className="block text-xs font-semibold text-slate-500 mb-1.5 flex items-center">
         {label} {required && <span className="text-red-500">*</span>}
+        {showWarning && (
+          <span className="ml-2 text-[10px] text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded font-medium">
+            확인 필요
+          </span>
+        )}
       </label>
       <input
         type={type === 'currency' ? 'text' : type}
@@ -57,7 +68,8 @@ const InvoiceInput = ({
         onChange={handleChange}
         placeholder={placeholder}
         className={cn(
-          'w-full p-2.5 bg-white text-slate-900 border border-slate-300 rounded-md text-sm transition-all outline-none',
+          'w-full p-2.5 bg-white text-slate-900 border rounded-md text-sm transition-all outline-none',
+          showWarning ? 'border-amber-400 ring-1 ring-amber-200' : 'border-slate-300',
           'focus:border-blue-500 focus:ring-1 focus:ring-blue-500',
           (type === 'currency' || label.includes('사업자') || label.includes('등록번호')) &&
             'font-mono',
@@ -96,7 +108,7 @@ const SkeletonForm = ({ onManualInput }: { onManualInput: () => void }) => (
   </div>
 );
 
-const callOCRApi = async (file: File, signal?: AbortSignal): Promise<InvoiceData> => {
+const callOCRApi = async (file: File, signal?: AbortSignal): Promise<OcrResult> => {
   const formData = new FormData();
   formData.append('file', file);
 
@@ -116,6 +128,7 @@ const callOCRApi = async (file: File, signal?: AbortSignal): Promise<InvoiceData
 export const StepExtraction = ({ file, initialData, onConfirm, onCancel }: Props) => {
   const [loading, setLoading] = useState<boolean>(!initialData);
   const [extractionFailed, setExtractionFailed] = useState<boolean>(false);
+  const [fieldConfidence, setFieldConfidence] = useState<FieldConfidence | null>(null);
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [previewUrl, setPreviewUrl] = useState<string>('');
   const [data, setData] = useState<InvoiceData>({
@@ -163,9 +176,11 @@ export const StepExtraction = ({ file, initialData, onConfirm, onCancel }: Props
     const toastId = toast.loading('AI 문서 분석 중...');
 
     callOCRApi(file, abortController.signal)
-      .then((result) => {
+      .then((ocrResult) => {
         if (abortController.signal.aborted) return;
-        setData(result);
+        setData(ocrResult.data);
+        setFieldConfidence(ocrResult.confidence);
+        const result = ocrResult.data;
         if (result.docType !== 'general') {
           toast.error('지원하지 않는 문서 유형입니다.', { id: toastId });
         } else {
@@ -312,12 +327,14 @@ export const StepExtraction = ({ file, initialData, onConfirm, onCancel }: Props
                   value={data.supplierRegNo}
                   onChange={(val) => handleUpdate('supplierRegNo', val)}
                   required
+                  confidence={fieldConfidence?.supplierRegNo}
                 />
                 <InvoiceInput
                   label="공급자 상호"
                   value={data.supplierName}
                   onChange={(val) => handleUpdate('supplierName', val)}
                   required
+                  confidence={fieldConfidence?.supplierName}
                 />
               </div>
               <div className="border-t border-slate-100"></div>
@@ -326,6 +343,7 @@ export const StepExtraction = ({ file, initialData, onConfirm, onCancel }: Props
                 value={data.receiverRegNo}
                 onChange={(val) => handleUpdate('receiverRegNo', val)}
                 required
+                confidence={fieldConfidence?.receiverRegNo}
               />
               <div className="border-t border-slate-100"></div>
               <InvoiceInput
@@ -334,6 +352,7 @@ export const StepExtraction = ({ file, initialData, onConfirm, onCancel }: Props
                 value={data.date}
                 onChange={(val) => handleUpdate('date', val)}
                 required
+                confidence={fieldConfidence?.date}
               />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <InvoiceInput
@@ -342,6 +361,7 @@ export const StepExtraction = ({ file, initialData, onConfirm, onCancel }: Props
                   value={data.supplyAmount}
                   onChange={(val) => handleUpdate('supplyAmount', parseCurrency(val))}
                   required
+                  confidence={fieldConfidence?.supplyAmount}
                 />
                 <InvoiceInput
                   label="세액"
@@ -349,6 +369,7 @@ export const StepExtraction = ({ file, initialData, onConfirm, onCancel }: Props
                   value={data.taxAmount}
                   onChange={(val) => handleUpdate('taxAmount', parseCurrency(val))}
                   required
+                  confidence={fieldConfidence?.taxAmount}
                 />
               </div>
             </div>
