@@ -14,6 +14,24 @@ export interface InvoiceData {
   taxAmount: number;
 }
 
+// OCR 추출 신뢰도
+export type ConfidenceLevel = 'high' | 'medium' | 'low' | 'missing';
+
+export type FieldConfidence = Record<keyof InvoiceData, ConfidenceLevel>;
+
+export interface OcrParseError {
+  field: string;
+  reason: string;
+  rawText?: string;
+}
+
+// 백엔드 OCR 응답 타입
+export interface OcrResult {
+  data: InvoiceData;
+  confidence: FieldConfidence;
+  parseErrors: OcrParseError[];
+}
+
 export interface ValidationResult {
   isValid: boolean;
   message: string;
