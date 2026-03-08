@@ -70,7 +70,7 @@ describe('anonymizeInvoiceData', () => {
     docType: 'general',
     isTaxInvoice: true,
     supplierRegNo: '123-45-67890',
-    supplierName: '주식회사빌런즈',
+    supplierName: '주식회사한국전자',
     receiverRegNo: '098-76-54321',
     date: '2024-12-15',
     supplyAmount: 10000000,
@@ -87,7 +87,7 @@ describe('anonymizeInvoiceData', () => {
   it('공급자명을 익명화한다', () => {
     const result = anonymizeInvoiceData(mockInvoiceData);
 
-    expect(result.supplierName).toBe('주**즈');
+    expect(result.supplierName).toBe('주**자');
   });
 
   it('긴 이름의 첫 글자와 마지막 글자를 유지한다', () => {

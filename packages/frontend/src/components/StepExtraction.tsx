@@ -31,7 +31,6 @@ interface InvoiceInputProps {
   confidence?: ConfidenceLevel;
 }
 
-// 신뢰도가 낮은 필드인지 판별
 const isLowConfidence = (c?: ConfidenceLevel) => c === 'low' || c === 'missing';
 
 const InvoiceInput = ({
