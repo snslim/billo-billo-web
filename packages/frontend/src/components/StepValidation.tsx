@@ -8,14 +8,16 @@ import type {
   ChecklistAnswer,
   ChecklistKey,
 } from '../types';
-import { createDefaultAnswers, isSupplierAnswers } from '../types';
+import { createDefaultAnswers } from '../types';
 import { validateInvoiceAsync } from '../services/validationService';
+import { SUPPLIER_CHECKLIST, RECEIVER_CHECKLIST } from '../data/checklist';
+import type { ChecklistItemMeta } from '../data/checklist';
 import {
   CheckCircle2,
   XCircle,
   AlertTriangle,
   ArrowRight,
-  ShieldCheck,
+  ClipboardCheck,
   Loader2,
   FileQuestion,
   BadgeInfo,
@@ -27,6 +29,26 @@ interface Props {
   role: UserRole;
   onProceed: (report: ValidationReport, userAnswers: UserChecklistAnswers) => void;
 }
+
+// 필요적 기재사항 존재 여부 확인 (값의 정확성은 판단하지 않음)
+const checkRequiredFields = (data: InvoiceData): ValidationResult => {
+  const checks: [string, string][] = [
+    ['공급자 사업자등록번호', data.supplierRegNo],
+    ['공급자 상호', data.supplierName],
+    ['공급받는자 사업자등록번호', data.receiverRegNo],
+    ['작성일자', data.date],
+  ];
+  const missing = checks.filter(([, value]) => !value).map(([label]) => label);
+
+  if (missing.length === 0) {
+    return { isValid: true, message: '필요적 기재사항 모두 기재됨', type: 'success' };
+  }
+  return {
+    isValid: false,
+    message: `다음 항목이 누락되었습니다: ${missing.join(', ')}`,
+    type: 'warning',
+  };
+};
 
 export const StepValidation = ({ data, role, onProceed }: Props) => {
   const [report, setReport] = useState<ValidationReport | null>(null);
@@ -51,16 +73,8 @@ export const StepValidation = ({ data, role, onProceed }: Props) => {
     });
   };
 
-  const ValidationItem = ({
-    label,
-    result,
-  }: {
-    label: string;
-    result: ValidationResult | undefined;
-  }) => {
-    if (!result || typeof result.type !== 'string' || typeof result.message !== 'string')
-      return null;
-
+  // 자동 확인 항목 표시용 컴포넌트
+  const AutoCheckItem = ({ label, result }: { label: string; result: ValidationResult }) => {
     let Icon = CheckCircle2;
     let colorClass = 'text-emerald-600';
     let bgClass = 'bg-emerald-50';
@@ -116,6 +130,7 @@ export const StepValidation = ({ data, role, onProceed }: Props) => {
     );
   };
 
+  // 사용자 체크리스트 카드 컴포넌트
   const ChecklistCard = ({
     title,
     description,
@@ -163,126 +178,99 @@ export const StepValidation = ({ data, role, onProceed }: Props) => {
     </div>
   );
 
-  const ChecklistSection = () => (
-    <div className="mt-8 pt-6 border-t border-slate-200 animate-fade-in">
-      <div className="flex flex-col mb-4">
-        <div className="flex items-center justify-between">
-          <h3 className="text-sm font-bold text-slate-800 flex items-center">
-            <FileQuestion className="w-4 h-4 mr-2 text-blue-600" />
-            추가 확인 사항
-          </h3>
-          <span className="text-[10px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full">
-            선택 사항
-          </span>
-        </div>
-        <p className="text-xs text-slate-500 mt-2 flex items-center bg-blue-50/50 p-2 rounded-lg">
-          <Sparkles className="w-3.5 h-3.5 mr-2 text-blue-500" />
-          아래 항목 중 해당되는 부분이 있다면 체크해주세요.
-        </p>
-      </div>
-
-      <div className="grid grid-cols-1 gap-3">
-        {role === 'supplier' && isSupplierAnswers(userAnswers) ? (
-          <ChecklistCard
-            title="전송 기한 내 국세청 전송 완료"
-            description="발급일 기준 다음달 10일까지 국세청에 전송하셨나요?"
-            checked={userAnswers.transmittedOnTime === 'yes'}
-            onChange={() => toggleAnswer('transmittedOnTime')}
-            legalHint="미전송 시 가산세(0.5%~1%) 부과 대상"
-          />
-        ) : !isSupplierAnswers(userAnswers) ? (
-          <>
-            <ChecklistCard
-              title="과세 사업을 위한 지출"
-              description="귀사의 과세 사업을 위해 사용하였거나 사용할 재화 또는 용역인가요?"
-              checked={userAnswers.purposeForBusiness === 'yes'}
-              onChange={() => toggleAnswer('purposeForBusiness')}
-              subText="사업과 직접 관련이 없거나 면세 사업과 관련된 매입세액인 경우 체크하지 마세요."
-            />
-            <ChecklistCard
-              title="사업자 등록 신청 전 매입"
-              description="사업자 등록을 신청하기 전에 발생한 거래인가요?"
-              checked={userAnswers.preRegistration === 'yes'}
-              onChange={() => toggleAnswer('preRegistration')}
-            />
-            <ChecklistCard
-              title="특정 불공제 항목"
-              description="기업업무추진비(접대비), 토지 관련, 또는 비영업용 소형승용차 관련 지출인가요?"
-              checked={userAnswers.specificNonDeductible === 'yes'}
-              onChange={() => toggleAnswer('specificNonDeductible')}
-            />
-          </>
-        ) : null}
-      </div>
-    </div>
-  );
-
   if (!report) {
     return (
       <div className="w-full max-w-2xl mx-auto text-center py-20 animate-pulse">
         <Loader2 className="w-8 h-8 text-blue-600 animate-spin mx-auto mb-4" />
-        <h3 className="text-sm font-medium text-slate-600">
-          국세청 데이터 조회 및 유효성 분석 중...
-        </h3>
+        <h3 className="text-sm font-medium text-slate-600">국세청 데이터 조회 중...</h3>
       </div>
     );
   }
 
-  const items =
-    role === 'supplier'
-      ? [
-          { label: '공급자 번호 유효성', result: report.supplierRegNoValid },
-          { label: '공급받는자 번호 유효성', result: report.receiverRegNoValid },
-          { label: '공급받는자 상태(휴폐업)', result: report.receiverStatus },
-          { label: '세액 계산', result: report.taxCalculation },
-          { label: '작성연월일 검토', result: report.dateValidity },
-        ]
-      : [
-          { label: '공급자 번호 유효성', result: report.supplierRegNoValid },
-          { label: '공급자 상태(휴폐업)', result: report.supplierStatus },
-          { label: '공급받는자 번호 유효성', result: report.receiverRegNoValid },
-          { label: '세액 계산', result: report.taxCalculation },
-          { label: '작성연월일 검토', result: report.dateValidity },
-        ];
+  // 자동 확인 항목 2개
+  const counterpartyStatus = role === 'supplier' ? report.receiverStatus : report.supplierStatus;
+  const requiredFieldsResult = checkRequiredFields(data);
 
-  const hasCriticalErrors = Object.values(report).some(
-    (r) => r && typeof r === 'object' && 'type' in r && r.type === 'error'
-  );
+  const hasAutoCheckIssue =
+    counterpartyStatus.type === 'error' || requiredFieldsResult.type !== 'success';
+
+  // 역할에 따른 체크리스트 데이터
+  const checklistItems: ChecklistItemMeta<string>[] =
+    role === 'supplier' ? SUPPLIER_CHECKLIST : RECEIVER_CHECKLIST;
 
   return (
     <div className="w-full max-w-xl mx-auto animate-fade-in pb-10">
+      {/* 페이지 헤더 */}
       <div className="text-center mb-6">
         <h2 className="text-xl font-bold text-slate-900 flex items-center justify-center">
-          <ShieldCheck className="w-6 h-6 mr-2 text-blue-600" />
-          유효성 검증 결과
+          <ClipboardCheck className="w-6 h-6 mr-2 text-blue-600" />
+          체크리스트
         </h2>
         <p className="text-xs text-slate-400 mt-2">
-          OCR을 통해 추출한 데이터 및 국세청 조회 결과를 바탕으로 진단합니다.
+          세금계산서의 주요 항목을 확인하고, 해당되는 사항을 체크해주세요.
         </p>
       </div>
 
-      <div className="space-y-1">
-        {items.map((item, index) => (
-          <ValidationItem key={index} label={item.label} result={item.result} />
-        ))}
+      {/* 자동 확인 섹션 */}
+      <div className="mb-6">
+        <h3 className="text-sm font-bold text-slate-800 mb-3 flex items-center">
+          <CheckCircle2 className="w-4 h-4 mr-2 text-emerald-600" />
+          자동 확인
+        </h3>
+        <div className="space-y-1">
+          <AutoCheckItem label="상대방 사업자 상태" result={counterpartyStatus} />
+          <AutoCheckItem label="필요적 기재사항" result={requiredFieldsResult} />
+        </div>
       </div>
 
-      <ChecklistSection />
+      {/* 직접 확인 섹션 */}
+      <div className="pt-6 border-t border-slate-200">
+        <div className="flex flex-col mb-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-bold text-slate-800 flex items-center">
+              <FileQuestion className="w-4 h-4 mr-2 text-blue-600" />
+              직접 확인해주세요
+            </h3>
+          </div>
+          <p className="text-xs text-slate-500 mt-2 flex items-center bg-blue-50/50 p-2 rounded-lg">
+            <Sparkles className="w-3.5 h-3.5 mr-2 text-blue-500" />
+            해당되는 항목을 체크하면 AI가 맞춤 조언을 제공합니다.
+          </p>
+        </div>
 
+        <div className="grid grid-cols-1 gap-3">
+          {checklistItems.map((item) => {
+            const record = userAnswers as unknown as Record<string, ChecklistAnswer>;
+            return (
+              <ChecklistCard
+                key={item.key}
+                title={item.title}
+                description={item.description}
+                checked={record[item.key] === 'yes'}
+                onChange={() => toggleAnswer(item.key as ChecklistKey)}
+                legalHint={item.legalHint}
+                subText={item.subText}
+              />
+            );
+          })}
+        </div>
+      </div>
+
+      {/* 다음 단계 버튼 */}
       <div className="flex justify-center mt-8">
         <button
           onClick={() => onProceed(report, userAnswers)}
           className={`w-full font-semibold py-4 px-4 rounded-xl flex items-center justify-center transition-all shadow-md text-sm group
             ${
-              hasCriticalErrors
-                ? 'bg-white border-2 border-red-100 text-red-600 hover:border-red-200 hover:bg-red-50'
+              hasAutoCheckIssue
+                ? 'bg-white border-2 border-amber-200 text-amber-700 hover:border-amber-300 hover:bg-amber-50'
                 : 'bg-slate-900 hover:bg-slate-800 text-white hover:shadow-lg hover:scale-[1.01]'
             }`}
         >
           <span>
-            {hasCriticalErrors
-              ? '위험 요소가 있습니다. AI 조언 보기'
-              : '검증 완료, AI 세무 비서 연결'}
+            {hasAutoCheckIssue
+              ? '확인 필요 항목이 있습니다. AI 조언 보기'
+              : '체크 완료, AI 세무 비서 연결'}
           </span>
           <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
         </button>
