@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Layout } from './components/Layout';
 import { StepIndicator } from './components/StepIndicator';
 import { StepRole } from './components/StepRole';
@@ -7,74 +6,42 @@ import { StepExtraction } from './components/StepExtraction';
 import { StepValidation } from './components/StepValidation';
 import { StepAdvisory } from './components/StepAdvisory';
 import { AppStep } from './types';
-import type { UserRole, InvoiceData, ValidationReport, UserChecklistAnswers } from './types';
+import { useInvoice } from './store/InvoiceProvider';
 
 function App() {
-  const [currentStep, setCurrentStep] = useState<AppStep>(AppStep.ROLE_SELECTION);
-  const [role, setRole] = useState<UserRole>(null);
-  const [file, setFile] = useState<File | null>(null);
-  const [invoiceData, setInvoiceData] = useState<InvoiceData | null>(null);
-  const [validationReport, setValidationReport] = useState<ValidationReport | null>(null);
-  const [userAnswers, setUserAnswers] = useState<UserChecklistAnswers | null>(null);
-
-  const handleRoleSelect = (selectedRole: UserRole) => {
-    setRole(selectedRole);
-    setCurrentStep(AppStep.UPLOAD);
-  };
-
-  const handleUpload = (uploadedFile: File) => {
-    setFile(uploadedFile);
-    setCurrentStep(AppStep.EXTRACTION);
-  };
-
-  const handleUploadCancel = () => {
-    setFile(null);
-  };
-
-  const handleExtractionConfirm = (data: InvoiceData) => {
-    setInvoiceData(data);
-    setCurrentStep(AppStep.VALIDATION);
-  };
-
-  const handleExtractionCancel = () => {
-    setFile(null);
-    setInvoiceData(null);
-    setCurrentStep(AppStep.UPLOAD);
-  };
-
-  const handleValidationProceed = (report: ValidationReport, answers: UserChecklistAnswers) => {
-    setValidationReport(report);
-    setUserAnswers(answers);
-    setCurrentStep(AppStep.ADVISORY);
-  };
-
-  const handleReset = () => {
-    setCurrentStep(AppStep.ROLE_SELECTION);
-    setRole(null);
-    setFile(null);
-    setInvoiceData(null);
-    setValidationReport(null);
-    setUserAnswers(null);
-  };
+  const { state, dispatch } = useInvoice();
+  const { currentStep, role, file, invoiceData, validationReport, userAnswers } = state;
 
   const renderStep = () => {
     switch (currentStep) {
       case AppStep.ROLE_SELECTION:
-        return <StepRole onSelect={handleRoleSelect} />;
+        return <StepRole onSelect={(r) => r && dispatch({ type: 'SELECT_ROLE', role: r })} />;
       case AppStep.UPLOAD:
-        return <StepUpload file={file} onUpload={handleUpload} onCancel={handleUploadCancel} />;
+        return (
+          <StepUpload
+            file={file}
+            onUpload={(f) => dispatch({ type: 'UPLOAD_FILE', file: f })}
+            onCancel={() => dispatch({ type: 'CANCEL_UPLOAD' })}
+          />
+        );
       case AppStep.EXTRACTION:
         return (
           <StepExtraction
             file={file}
             initialData={invoiceData}
-            onConfirm={handleExtractionConfirm}
-            onCancel={handleExtractionCancel}
+            onConfirm={(data) => dispatch({ type: 'CONFIRM_EXTRACTION', data })}
+            onCancel={() => dispatch({ type: 'CANCEL_EXTRACTION' })}
           />
         );
       case AppStep.VALIDATION:
         return invoiceData ? (
-          <StepValidation data={invoiceData} role={role} onProceed={handleValidationProceed} />
+          <StepValidation
+            data={invoiceData}
+            role={role}
+            onProceed={(report, answers) =>
+              dispatch({ type: 'PROCEED_TO_ADVISORY', report, answers })
+            }
+          />
         ) : null;
       case AppStep.ADVISORY:
         return invoiceData && validationReport && userAnswers ? (
@@ -83,7 +50,7 @@ function App() {
             role={role}
             validationReport={validationReport}
             userAnswers={userAnswers}
-            onReset={handleReset}
+            onReset={() => dispatch({ type: 'RESET' })}
           />
         ) : null;
       default:
