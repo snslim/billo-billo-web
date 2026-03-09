@@ -110,7 +110,7 @@ describe('Server API', () => {
       });
 
       expect(response.status).toBe(400);
-      expect(response.body.error).toBe('이미지 파일만 OCR 처리 가능합니다');
+      expect(response.body.error).toBe('지원하지 않는 파일 형식입니다');
     });
 
     it('유효한 이미지로 OCR을 실행하고 응답을 파싱한다', async () => {
