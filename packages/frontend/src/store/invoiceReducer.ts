@@ -17,7 +17,8 @@ export type AppAction =
   | { type: 'CONFIRM_EXTRACTION'; data: InvoiceData }
   | { type: 'CANCEL_EXTRACTION' }
   | { type: 'PROCEED_TO_ADVISORY'; report: ValidationReport; answers: UserChecklistAnswers }
-  | { type: 'RESET' };
+  | { type: 'RESET' }
+  | { type: 'GO_BACK' };
 
 export const initialState: AppState = {
   currentStep: AppStep.ROLE_SELECTION,
@@ -49,6 +50,9 @@ export function invoiceReducer(state: AppState, action: AppAction): AppState {
       };
     case 'RESET':
       return initialState;
+    case 'GO_BACK':
+      if (state.currentStep === AppStep.ROLE_SELECTION) return state;
+      return { ...state, currentStep: state.currentStep - 1 };
     default:
       return state;
   }
