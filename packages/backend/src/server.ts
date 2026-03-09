@@ -13,11 +13,12 @@ for (const envVar of requiredEnvVars) {
 }
 
 const { app } = await import('./app.js');
+const { logger } = await import('./utils/logger.js');
 
 const PORT = Number(process.env.PORT) || 3000;
 
 const server = app.listen(PORT, () => {
-  console.log(`서버 실행 중: 포트 ${PORT}`);
+  logger.info({ port: PORT }, '서버 실행 중');
 });
 
 export { app, server };

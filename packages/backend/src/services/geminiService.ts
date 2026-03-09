@@ -1,4 +1,5 @@
 import fetch from 'node-fetch';
+import { logger } from '../utils/logger.js';
 
 export async function getEmbeddings(texts: string[]): Promise<number[][]> {
   const response = await fetch(
@@ -17,7 +18,7 @@ export async function getEmbeddings(texts: string[]): Promise<number[][]> {
 
   if (!response.ok) {
     const errorBody = await response.text();
-    console.error('Gemini Embedding API 오류:', errorBody);
+    logger.error({ body: errorBody }, 'Gemini Embedding API 오류');
     throw new Error('Embedding 처리 실패');
   }
 
@@ -46,7 +47,7 @@ export async function generateAdvisory(
 
   if (!response.ok) {
     const errorBody = await response.text();
-    console.error('Gemini API 오류:', errorBody);
+    logger.error({ body: errorBody }, 'Gemini API 오류');
     throw new Error('AI 조언 생성 실패');
   }
 

@@ -1,4 +1,5 @@
 import fetch from 'node-fetch';
+import { logger } from '../utils/logger.js';
 
 export async function validateBusiness(businessNumbers: string[]): Promise<unknown> {
   const response = await fetch(
@@ -11,7 +12,7 @@ export async function validateBusiness(businessNumbers: string[]): Promise<unkno
   );
 
   if (!response.ok) {
-    console.error(`국세청 API 오류: ${response.status}`);
+    logger.error({ status: response.status }, '국세청 API 오류');
     throw new Error('국세청 조회 실패');
   }
 

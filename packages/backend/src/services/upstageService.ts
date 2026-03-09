@@ -2,6 +2,7 @@ import FormData from 'form-data';
 import fetch from 'node-fetch';
 import { parseUpstageResponse } from '../upstageParsing.js';
 import type { OcrResult } from '../types.js';
+import { logger } from '../utils/logger.js';
 
 export async function callOcr(
   fileBuffer: Buffer,
@@ -21,8 +22,7 @@ export async function callOcr(
 
   if (!response.ok) {
     const errorBody = await response.text();
-    console.error(`UPSTAGE API 오류: ${response.status}`);
-    console.error('에러 상세:', errorBody);
+    logger.error({ status: response.status, body: errorBody }, 'UPSTAGE API 오류');
     throw new Error('OCR 처리 실패');
   }
 
