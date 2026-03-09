@@ -1,8 +1,8 @@
-import fetch from 'node-fetch';
 import { logger } from '../utils/logger.js';
+import { fetchWithRetry } from '../utils/retry.js';
 
 export async function getEmbeddings(texts: string[]): Promise<number[][]> {
-  const response = await fetch(
+  const response = await fetchWithRetry(
     `https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:batchEmbedContents?key=${process.env.GEMINI_API_KEY}`,
     {
       method: 'POST',
@@ -13,7 +13,8 @@ export async function getEmbeddings(texts: string[]): Promise<number[][]> {
           content: { parts: [{ text }] },
         })),
       }),
-    }
+    },
+    { maxAttempts: 1, timeoutMs: 30_000 }
   );
 
   if (!response.ok) {
@@ -30,7 +31,7 @@ export async function generateAdvisory(
   contents: string,
   systemInstruction: string
 ): Promise<string> {
-  const response = await fetch(
+  const response = await fetchWithRetry(
     `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
     {
       method: 'POST',
@@ -42,7 +43,8 @@ export async function generateAdvisory(
           responseMimeType: 'application/json',
         },
       }),
-    }
+    },
+    { maxAttempts: 1, timeoutMs: 30_000 }
   );
 
   if (!response.ok) {
