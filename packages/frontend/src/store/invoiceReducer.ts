@@ -20,6 +20,14 @@ export type AppAction =
   | { type: 'RESET' }
   | { type: 'GO_BACK' };
 
+const PREV_STEP: Record<AppStep, AppStep> = {
+  [AppStep.ROLE_SELECTION]: AppStep.ROLE_SELECTION,
+  [AppStep.UPLOAD]: AppStep.ROLE_SELECTION,
+  [AppStep.EXTRACTION]: AppStep.UPLOAD,
+  [AppStep.VALIDATION]: AppStep.EXTRACTION,
+  [AppStep.ADVISORY]: AppStep.VALIDATION,
+};
+
 export const initialState: AppState = {
   currentStep: AppStep.ROLE_SELECTION,
   role: null,
@@ -51,8 +59,7 @@ export function invoiceReducer(state: AppState, action: AppAction): AppState {
     case 'RESET':
       return initialState;
     case 'GO_BACK':
-      if (state.currentStep === AppStep.ROLE_SELECTION) return state;
-      return { ...state, currentStep: state.currentStep - 1 };
+      return { ...state, currentStep: PREV_STEP[state.currentStep] };
     default:
       return state;
   }
