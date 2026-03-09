@@ -1,23 +1,11 @@
 import { Router, Request, Response } from 'express';
-import rateLimit from 'express-rate-limit';
 import { upload } from '../middlewares/upload.js';
+import { uploadLimiter, ocrLimiter } from '../middlewares/rateLimiter.js';
 import { callOcr } from '../services/upstageService.js';
 import { AppError } from '../utils/AppError.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 
 const router = Router();
-
-const uploadLimiter = rateLimit({
-  windowMs: 60 * 1000,
-  max: 10,
-  message: { error: '요청이 너무 많습니다. 잠시 후 다시 시도해주세요.' },
-});
-
-const ocrLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 50,
-  message: { error: 'OCR 요청이 너무 많습니다. 잠시 후 다시 시도해주세요.' },
-});
 
 router.post('/upload', uploadLimiter, upload.single('file'), (req: Request, res: Response) => {
   if (!req.file) {

@@ -1,16 +1,10 @@
 import { Router, Request, Response } from 'express';
-import rateLimit from 'express-rate-limit';
+import { aiLimiter } from '../middlewares/rateLimiter.js';
 import { getEmbeddings, generateAdvisory } from '../services/geminiService.js';
 import { AppError } from '../utils/AppError.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 
 const router = Router();
-
-const aiLimiter = rateLimit({
-  windowMs: 60 * 1000,
-  max: 10,
-  message: { error: 'AI 요청이 너무 많습니다. 잠시 후 다시 시도해주세요.' },
-});
 
 router.post(
   '/embeddings',
