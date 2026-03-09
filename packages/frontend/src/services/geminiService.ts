@@ -133,7 +133,7 @@ export const getTaxAdvice = async (
   role: UserRole,
   validationIssues: string[],
   userAnswers: UserChecklistAnswers
-): Promise<{ advisory: AIAdvisoryResponse; references: LegalReference[] }> => {
+): Promise<{ advisory: AIAdvisoryResponse; references: LegalReference[]; isMock: boolean }> => {
   const safeData = anonymizeInvoiceData(data);
   const issuesText = validationIssues.join(', ') || '특이사항 없음';
 
@@ -220,12 +220,13 @@ export const getTaxAdvice = async (
     } catch {
       console.error('JSON Parse Error, using mock response');
       advisory = MOCK_ADVISORY_RESPONSE;
+      return { advisory, references: relevantLaws, isMock: true };
     }
 
-    return { advisory, references: relevantLaws };
+    return { advisory, references: relevantLaws, isMock: false };
   } catch (error) {
     console.error('Advisory Error:', error);
     toast.error('AI 서버 연결 실패');
-    return { advisory: MOCK_ADVISORY_RESPONSE, references: relevantLaws };
+    return { advisory: MOCK_ADVISORY_RESPONSE, references: relevantLaws, isMock: true };
   }
 };
