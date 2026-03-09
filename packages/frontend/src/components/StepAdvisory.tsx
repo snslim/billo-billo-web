@@ -33,6 +33,7 @@ export const StepAdvisory = ({ data, role, validationReport, userAnswers, onRese
   const [advisory, setAdvisory] = useState<AIAdvisoryResponse | null>(null);
   const [references, setReferences] = useState<LegalReference[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isMock, setIsMock] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
@@ -49,6 +50,7 @@ export const StepAdvisory = ({ data, role, validationReport, userAnswers, onRese
         if (isMounted) {
           setAdvisory(result.advisory);
           setReferences(result.references);
+          setIsMock(result.isMock);
         }
       } catch (e) {
         console.error(e);
@@ -119,6 +121,15 @@ export const StepAdvisory = ({ data, role, validationReport, userAnswers, onRese
               </div>
             ) : advisory ? (
               <div className="space-y-8 animate-fade-in">
+                {isMock && (
+                  <div className="bg-amber-50 border border-amber-200 p-3 rounded-lg flex items-start gap-2">
+                    <AlertTriangle className="w-4 h-4 text-amber-600 mt-0.5 shrink-0" />
+                    <p className="text-xs text-amber-800">
+                      AI 서버 연결에 실패하여 샘플 응답을 표시하고 있습니다. &apos;조언 다시
+                      받기&apos;를 클릭하여 재시도할 수 있습니다.
+                    </p>
+                  </div>
+                )}
                 <div className="bg-blue-50 border border-blue-100 p-4 rounded-lg">
                   <h4 className="text-sm font-bold text-blue-900 mb-1 flex items-center">
                     <Info className="w-4 h-4 mr-2" />
