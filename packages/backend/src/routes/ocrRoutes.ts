@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import rateLimit from 'express-rate-limit';
 import { upload } from '../middlewares/upload.js';
 import { callOcr } from '../services/upstageService.js';
+import { logger } from '../utils/logger.js';
 
 const router = Router();
 
@@ -46,7 +47,7 @@ router.post('/ocr', ocrLimiter, upload.single('file'), async (req: Request, res:
     const ocrResult = await callOcr(file.buffer, file.originalname, file.mimetype);
     res.json(ocrResult);
   } catch (error) {
-    console.error('OCR 처리 오류:', error);
+    logger.error({ err: error }, 'OCR 처리 오류');
     const message = error instanceof Error ? error.message : 'OCR 처리 중 오류가 발생했습니다';
     res.status(500).json({ error: message });
   }

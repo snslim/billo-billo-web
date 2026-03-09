@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import rateLimit from 'express-rate-limit';
 import { validateBusiness } from '../services/ntsService.js';
+import { logger } from '../utils/logger.js';
 
 const router = Router();
 
@@ -22,7 +23,7 @@ router.post('/validate-business', validateLimiter, async (req: Request, res: Res
     const data = await validateBusiness(b_no);
     res.json(data);
   } catch (error) {
-    console.error('사업자 검증 오류:', error);
+    logger.error({ err: error }, '사업자 검증 오류');
     const message = error instanceof Error ? error.message : '사업자 검증 중 오류가 발생했습니다';
     res.status(500).json({ error: message });
   }

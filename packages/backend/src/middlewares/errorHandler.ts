@@ -1,5 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
 import multer from 'multer';
+import { logger } from '../utils/logger.js';
 
 export function errorHandler(err: Error, _req: Request, res: Response, _next: NextFunction) {
   if (err instanceof multer.MulterError) {
@@ -14,6 +15,6 @@ export function errorHandler(err: Error, _req: Request, res: Response, _next: Ne
     res.status(400).json({ error: err.message });
     return;
   }
-  console.error('서버 오류:', err.message);
+  logger.error({ err }, '서버 오류');
   res.status(500).json({ error: '서버 오류가 발생했습니다' });
 }

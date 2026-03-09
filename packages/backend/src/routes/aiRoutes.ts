@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import rateLimit from 'express-rate-limit';
 import { getEmbeddings, generateAdvisory } from '../services/geminiService.js';
+import { logger } from '../utils/logger.js';
 
 const router = Router();
 
@@ -22,7 +23,7 @@ router.post('/embeddings', aiLimiter, async (req: Request, res: Response) => {
     const embeddings = await getEmbeddings(texts);
     res.json({ embeddings });
   } catch (error) {
-    console.error('Embedding 오류:', error);
+    logger.error({ err: error }, 'Embedding 오류');
     const message =
       error instanceof Error ? error.message : 'Embedding 처리 중 오류가 발생했습니다';
     res.status(500).json({ error: message });
@@ -41,7 +42,7 @@ router.post('/advisory', aiLimiter, async (req: Request, res: Response) => {
     const text = await generateAdvisory(contents, systemInstruction);
     res.json({ text });
   } catch (error) {
-    console.error('AI 조언 오류:', error);
+    logger.error({ err: error }, 'AI 조언 오류');
     const message = error instanceof Error ? error.message : 'AI 조언 생성 중 오류가 발생했습니다';
     res.status(500).json({ error: message });
   }
