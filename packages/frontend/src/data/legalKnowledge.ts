@@ -278,50 +278,60 @@ export const TAX_LAW_KNOWLEDGE_BASE = [
   },
 ] satisfies LegalReference[];
 
+const embeddingCache = new Map<string, number[]>();
+
+async function fetchEmbeddings(texts: string[]): Promise<number[][]> {
+  const response = await fetch(`${config.api.baseUrl}/api/embeddings`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ texts }),
+  });
+  if (!response.ok) throw new Error('Embedding API Failed');
+  const { embeddings } = await response.json();
+  return embeddings;
+}
+
+async function ensureLawEmbeddings(): Promise<void> {
+  if (embeddingCache.size === TAX_LAW_KNOWLEDGE_BASE.length) return;
+
+  const texts = TAX_LAW_KNOWLEDGE_BASE.map((l) => `${l.source}: ${l.content}`);
+  const embeddings = await fetchEmbeddings(texts);
+
+  TAX_LAW_KNOWLEDGE_BASE.forEach((law, i) => {
+    embeddingCache.set(law.id, embeddings[i]);
+  });
+}
+
+export function getEmbeddingCacheSize(): number {
+  return embeddingCache.size;
+}
+
+function vectorSearch(
+  queryVector: number[],
+  role: 'supplier' | 'receiver' | null
+): { law: LegalReference; score: number }[] {
+  return TAX_LAW_KNOWLEDGE_BASE.map((law) => {
+    const docVector = embeddingCache.get(law.id);
+    if (!docVector) return { law, score: 0 };
+
+    const similarity = cosineSimilarity(queryVector, docVector);
+    const roleBonus = role && law.applicableRoles.some((r) => r === role) ? law.roleWeight : 0;
+
+    return { law, score: similarity + roleBonus };
+  });
+}
+
 export const retrieveRelevantLawsByVector = async (
   query: string,
   role: 'supplier' | 'receiver' | null
 ): Promise<LegalReference[]> => {
   try {
-    const allTexts = [query, ...TAX_LAW_KNOWLEDGE_BASE.map((l) => `${l.source}: ${l.content}`)];
+    await ensureLawEmbeddings();
 
-    const response = await fetch(`${config.api.baseUrl}/api/embeddings`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ texts: allTexts }),
-    });
+    const [queryVector] = await fetchEmbeddings([query]);
+    const scored = vectorSearch(queryVector, role);
 
-    if (!response.ok) throw new Error('Embedding API Failed');
-
-    const { embeddings } = await response.json();
-
-    const queryVector = embeddings[0];
-    const docVectors = embeddings.slice(1);
-
-    const scoredLaws = TAX_LAW_KNOWLEDGE_BASE.map((law, index) => {
-      const score = cosineSimilarity(queryVector, docVectors[index]);
-      let weightedScore = score;
-
-      if (role === 'receiver') {
-        if (
-          law.id.includes('38') ||
-          law.id.includes('39') ||
-          law.id.includes('54') ||
-          law.id === 'vat-60-receiver'
-        ) {
-          weightedScore += 0.25;
-        }
-      }
-      if (role === 'supplier') {
-        if (law.id.includes('32') || law.id === 'vat-60') {
-          weightedScore += 0.25;
-        }
-      }
-
-      return { law, score: weightedScore };
-    });
-
-    return scoredLaws
+    return scored
       .sort((a, b) => b.score - a.score)
       .map((item) => item.law)
       .slice(0, 3);
