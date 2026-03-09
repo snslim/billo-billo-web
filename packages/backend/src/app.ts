@@ -1,29 +1,14 @@
 import express, { Request, Response } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import multer from 'multer';
 import rateLimit from 'express-rate-limit';
 import { errorHandler } from './middlewares/errorHandler.js';
+import { upload } from './middlewares/upload.js';
 import FormData from 'form-data';
 import fetch from 'node-fetch';
 import { parseUpstageResponse } from './upstageParsing.js';
 
 const app = express();
-
-const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'application/pdf'];
-const MAX_FILE_SIZE = 5 * 1024 * 1024;
-
-const upload = multer({
-  storage: multer.memoryStorage(),
-  limits: { fileSize: MAX_FILE_SIZE, files: 1 },
-  fileFilter: (_req, file, cb) => {
-    if (ALLOWED_MIME_TYPES.includes(file.mimetype)) {
-      cb(null, true);
-    } else {
-      cb(new Error('지원하지 않는 파일 형식입니다'));
-    }
-  },
-});
 
 const uploadLimiter = rateLimit({
   windowMs: 60 * 1000,
