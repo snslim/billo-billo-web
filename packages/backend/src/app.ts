@@ -4,9 +4,9 @@ import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import { errorHandler } from './middlewares/errorHandler.js';
 import { upload } from './middlewares/upload.js';
-import FormData from 'form-data';
-import fetch from 'node-fetch';
-import { parseUpstageResponse } from './upstageParsing.js';
+import { callOcr } from './services/upstageService.js';
+import { validateBusiness } from './services/ntsService.js';
+import { getEmbeddings, generateAdvisory } from './services/geminiService.js';
 
 const app = express();
 
@@ -60,34 +60,12 @@ app.post('/api/ocr', ocrLimiter, upload.single('file'), async (req: Request, res
       return;
     }
 
-    const formData = new FormData();
-    formData.append('document', file.buffer, {
-      filename: file.originalname,
-      contentType: file.mimetype,
-    });
-
-    const response = await fetch('https://api.upstage.ai/v1/document-ai/ocr', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${process.env.UPSTAGE_API_KEY}`,
-      },
-      body: formData,
-    });
-
-    if (!response.ok) {
-      const errorBody = await response.text();
-      console.error(`UPSTAGE API 오류: ${response.status}`);
-      console.error('에러 상세:', errorBody);
-      res.status(500).json({ error: 'OCR 처리 실패' });
-      return;
-    }
-
-    const rawData = await response.json();
-    const ocrResult = parseUpstageResponse(rawData);
+    const ocrResult = await callOcr(file.buffer, file.originalname, file.mimetype);
     res.json(ocrResult);
   } catch (error) {
     console.error('OCR 처리 오류:', error);
-    res.status(500).json({ error: 'OCR 처리 중 오류가 발생했습니다' });
+    const message = error instanceof Error ? error.message : 'OCR 처리 중 오류가 발생했습니다';
+    res.status(500).json({ error: message });
   }
 });
 
@@ -106,26 +84,12 @@ app.post('/api/validate-business', validateLimiter, async (req: Request, res: Re
       return;
     }
 
-    const response = await fetch(
-      `https://api.odcloud.kr/api/nts-businessman/v1/status?serviceKey=${process.env.NTS_API_KEY}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ b_no }),
-      }
-    );
-
-    if (!response.ok) {
-      console.error(`국세청 API 오류: ${response.status}`);
-      res.status(500).json({ error: '국세청 조회 실패' });
-      return;
-    }
-
-    const data = await response.json();
+    const data = await validateBusiness(b_no);
     res.json(data);
   } catch (error) {
     console.error('사업자 검증 오류:', error);
-    res.status(500).json({ error: '사업자 검증 중 오류가 발생했습니다' });
+    const message = error instanceof Error ? error.message : '사업자 검증 중 오류가 발생했습니다';
+    res.status(500).json({ error: message });
   }
 });
 
@@ -144,33 +108,13 @@ app.post('/api/embeddings', aiLimiter, async (req: Request, res: Response) => {
       return;
     }
 
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:batchEmbedContents?key=${process.env.GEMINI_API_KEY}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          requests: texts.map((text: string) => ({
-            model: 'models/text-embedding-004',
-            content: { parts: [{ text }] },
-          })),
-        }),
-      }
-    );
-
-    if (!response.ok) {
-      const errorBody = await response.text();
-      console.error('Gemini Embedding API 오류:', errorBody);
-      res.status(500).json({ error: 'Embedding 처리 실패' });
-      return;
-    }
-
-    const data = (await response.json()) as { embeddings?: Array<{ values: number[] }> };
-    const embeddings = data.embeddings?.map((e) => e.values) || [];
+    const embeddings = await getEmbeddings(texts);
     res.json({ embeddings });
   } catch (error) {
     console.error('Embedding 오류:', error);
-    res.status(500).json({ error: 'Embedding 처리 중 오류가 발생했습니다' });
+    const message =
+      error instanceof Error ? error.message : 'Embedding 처리 중 오류가 발생했습니다';
+    res.status(500).json({ error: message });
   }
 });
 
@@ -183,36 +127,12 @@ app.post('/api/advisory', aiLimiter, async (req: Request, res: Response) => {
       return;
     }
 
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          systemInstruction: { parts: [{ text: systemInstruction }] },
-          contents: [{ parts: [{ text: contents }] }],
-          generationConfig: {
-            responseMimeType: 'application/json',
-          },
-        }),
-      }
-    );
-
-    if (!response.ok) {
-      const errorBody = await response.text();
-      console.error('Gemini API 오류:', errorBody);
-      res.status(500).json({ error: 'AI 조언 생성 실패' });
-      return;
-    }
-
-    const data = (await response.json()) as {
-      candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
-    };
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
+    const text = await generateAdvisory(contents, systemInstruction);
     res.json({ text });
   } catch (error) {
     console.error('AI 조언 오류:', error);
-    res.status(500).json({ error: 'AI 조언 생성 중 오류가 발생했습니다' });
+    const message = error instanceof Error ? error.message : 'AI 조언 생성 중 오류가 발생했습니다';
+    res.status(500).json({ error: message });
   }
 });
 
