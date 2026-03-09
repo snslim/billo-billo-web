@@ -345,4 +345,34 @@ describe('Server API', () => {
       expect(response.body.error).toContain('5MB');
     });
   });
+
+  describe('보안 헤더 (helmet)', () => {
+    it('X-Content-Type-Options 헤더를 설정한다', async () => {
+      const response = await request(app).get('/api/health');
+
+      expect(response.headers['x-content-type-options']).toBe('nosniff');
+    });
+
+    it('X-Frame-Options 헤더를 설정한다', async () => {
+      const response = await request(app).get('/api/health');
+
+      expect(response.headers['x-frame-options']).toBe('SAMEORIGIN');
+    });
+  });
+
+  describe('CORS origin 제한', () => {
+    it('허용된 origin에 Access-Control-Allow-Origin을 반환한다', async () => {
+      const response = await request(app).get('/api/health').set('Origin', 'http://localhost:5173');
+
+      expect(response.headers['access-control-allow-origin']).toBe('http://localhost:5173');
+    });
+
+    it('허용되지 않은 origin에는 Access-Control-Allow-Origin을 반환하지 않는다', async () => {
+      const response = await request(app)
+        .get('/api/health')
+        .set('Origin', 'http://malicious-site.com');
+
+      expect(response.headers['access-control-allow-origin']).toBeUndefined();
+    });
+  });
 });
