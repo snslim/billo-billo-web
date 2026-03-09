@@ -1,7 +1,8 @@
 import { logger } from '../utils/logger.js';
 import { fetchWithRetry } from '../utils/retry.js';
+import type { NtsValidationResponse } from '../types.js';
 
-export async function validateBusiness(businessNumbers: string[]): Promise<unknown> {
+export async function validateBusiness(businessNumbers: string[]): Promise<NtsValidationResponse> {
   const response = await fetchWithRetry(
     `https://api.odcloud.kr/api/nts-businessman/v1/status?serviceKey=${process.env.NTS_API_KEY}`,
     {
@@ -17,5 +18,5 @@ export async function validateBusiness(businessNumbers: string[]): Promise<unkno
     throw new Error('국세청 조회 실패');
   }
 
-  return response.json();
+  return (await response.json()) as NtsValidationResponse;
 }

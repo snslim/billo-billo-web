@@ -1,5 +1,6 @@
 import { logger } from '../utils/logger.js';
 import { fetchWithRetry } from '../utils/retry.js';
+import type { GeminiEmbeddingResponse, GeminiGenerateResponse } from '../types.js';
 
 export async function getEmbeddings(texts: string[]): Promise<number[][]> {
   const response = await fetchWithRetry(
@@ -23,7 +24,7 @@ export async function getEmbeddings(texts: string[]): Promise<number[][]> {
     throw new Error('Embedding 처리 실패');
   }
 
-  const data = (await response.json()) as { embeddings?: Array<{ values: number[] }> };
+  const data = (await response.json()) as GeminiEmbeddingResponse;
   return data.embeddings?.map((e) => e.values) || [];
 }
 
@@ -53,8 +54,6 @@ export async function generateAdvisory(
     throw new Error('AI 조언 생성 실패');
   }
 
-  const data = (await response.json()) as {
-    candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
-  };
+  const data = (await response.json()) as GeminiGenerateResponse;
   return data.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
 }
