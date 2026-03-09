@@ -13,6 +13,14 @@ export function Layout({ children }: LayoutProps) {
       </header>
 
       <main className="max-w-4xl mx-auto px-4 py-8">{children}</main>
+
+      <footer className="border-t border-gray-200 bg-white mt-auto">
+        <div className="max-w-4xl mx-auto px-4 py-4">
+          <p className="text-xs text-gray-400 text-center">
+            본 서비스는 AI 기반 참고용 정보를 제공하며, 전문 세무사의 조언을 대체하지 않습니다.
+          </p>
+        </div>
+      </footer>
     </div>
   );
 }
