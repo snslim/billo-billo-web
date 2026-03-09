@@ -1,8 +1,7 @@
 import { Building2, ShoppingBag } from 'lucide-react';
-import type { UserRole } from '../types';
 
 interface StepRoleProps {
-  onSelect: (role: UserRole) => void;
+  onSelect: (role: 'supplier' | 'receiver') => void;
 }
 
 export function StepRole({ onSelect }: StepRoleProps) {

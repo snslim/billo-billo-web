@@ -15,7 +15,7 @@ function App() {
   const renderStep = () => {
     switch (currentStep) {
       case AppStep.ROLE_SELECTION:
-        return <StepRole onSelect={(r) => r && dispatch({ type: 'SELECT_ROLE', role: r })} />;
+        return <StepRole onSelect={(r) => dispatch({ type: 'SELECT_ROLE', role: r })} />;
       case AppStep.UPLOAD:
         return (
           <StepUpload
