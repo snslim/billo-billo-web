@@ -50,7 +50,9 @@ for (const envVar of requiredEnvVars) {
   }
 }
 
-const ALLOWED_ORIGINS = [process.env.FRONTEND_URL, 'http://localhost:5173'].filter(Boolean);
+const ALLOWED_ORIGINS = [process.env.FRONTEND_URL, 'http://localhost:5173'].filter(
+  (origin): origin is string => Boolean(origin)
+);
 
 app.use(helmet());
 app.use(cors({ origin: ALLOWED_ORIGINS }));
