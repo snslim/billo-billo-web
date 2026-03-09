@@ -29,4 +29,3 @@ app.use('/api', aiRoutes);
 app.use(errorHandler);
 
 export { app };
-export default app;

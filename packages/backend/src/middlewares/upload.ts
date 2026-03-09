@@ -1,4 +1,5 @@
 import multer from 'multer';
+import { AppError } from '../utils/AppError.js';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
@@ -13,7 +14,7 @@ function createUpload(allowedTypes: string[]) {
       if (allowedTypes.includes(file.mimetype)) {
         cb(null, true);
       } else {
-        cb(new Error('지원하지 않는 파일 형식입니다'));
+        cb(new AppError(400, '지원하지 않는 파일 형식입니다'));
       }
     },
   });

@@ -7,7 +7,9 @@ process.env.UPSTAGE_API_KEY = 'test-upstage-key';
 process.env.NTS_API_KEY = 'test-nts-key';
 process.env.GEMINI_API_KEY = 'test-gemini-key';
 
-const mockFetch = vi.fn();
+const { mockFetch } = vi.hoisted(() => ({
+  mockFetch: vi.fn(),
+}));
 vi.mock('node-fetch', () => ({
   default: mockFetch,
 }));
