@@ -2,7 +2,8 @@ import { Router, Request, Response } from 'express';
 import rateLimit from 'express-rate-limit';
 import { upload } from '../middlewares/upload.js';
 import { callOcr } from '../services/upstageService.js';
-import { logger } from '../utils/logger.js';
+import { AppError } from '../utils/AppError.js';
+import { asyncHandler } from '../utils/asyncHandler.js';
 
 const router = Router();
 
@@ -31,26 +32,19 @@ router.post('/upload', uploadLimiter, upload.single('file'), (req: Request, res:
   });
 });
 
-router.post('/ocr', ocrLimiter, upload.single('file'), async (req: Request, res: Response) => {
-  try {
+router.post(
+  '/ocr',
+  ocrLimiter,
+  upload.single('file'),
+  asyncHandler(async (req: Request, res: Response) => {
     const file = req.file;
-    if (!file) {
-      res.status(400).json({ error: '파일이 없습니다' });
-      return;
-    }
-
-    if (!file.mimetype.startsWith('image/')) {
-      res.status(400).json({ error: '이미지 파일만 OCR 처리 가능합니다' });
-      return;
-    }
+    if (!file) throw new AppError(400, '파일이 없습니다');
+    if (!file.mimetype.startsWith('image/'))
+      throw new AppError(400, '이미지 파일만 OCR 처리 가능합니다');
 
     const ocrResult = await callOcr(file.buffer, file.originalname, file.mimetype);
     res.json(ocrResult);
-  } catch (error) {
-    logger.error({ err: error }, 'OCR 처리 오류');
-    const message = error instanceof Error ? error.message : 'OCR 처리 중 오류가 발생했습니다';
-    res.status(500).json({ error: message });
-  }
-});
+  })
+);
 
 export { router as ocrRoutes };

@@ -1,5 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
 import multer from 'multer';
+import { AppError } from '../utils/AppError.js';
 import { logger } from '../utils/logger.js';
 
 export function errorHandler(err: Error, _req: Request, res: Response, _next: NextFunction) {
@@ -11,10 +12,19 @@ export function errorHandler(err: Error, _req: Request, res: Response, _next: Ne
     res.status(400).json({ error: '파일 업로드 오류가 발생했습니다' });
     return;
   }
+
   if (err.message === '지원하지 않는 파일 형식입니다') {
     res.status(400).json({ error: err.message });
     return;
   }
+
+  if (err instanceof AppError) {
+    logger.error({ err, statusCode: err.statusCode }, err.message);
+    res.status(err.statusCode).json({ error: err.message });
+    return;
+  }
+
   logger.error({ err }, '서버 오류');
-  res.status(500).json({ error: '서버 오류가 발생했습니다' });
+  const message = err instanceof Error ? err.message : '서버 오류가 발생했습니다';
+  res.status(500).json({ error: message });
 }
