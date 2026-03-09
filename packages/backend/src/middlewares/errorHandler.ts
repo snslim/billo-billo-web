@@ -1,0 +1,19 @@
+import type { Request, Response, NextFunction } from 'express';
+import multer from 'multer';
+
+export function errorHandler(err: Error, _req: Request, res: Response, _next: NextFunction) {
+  if (err instanceof multer.MulterError) {
+    if (err.code === 'LIMIT_FILE_SIZE') {
+      res.status(400).json({ error: '5MB 이하 파일만 업로드 가능합니다' });
+      return;
+    }
+    res.status(400).json({ error: '파일 업로드 오류가 발생했습니다' });
+    return;
+  }
+  if (err.message === '지원하지 않는 파일 형식입니다') {
+    res.status(400).json({ error: err.message });
+    return;
+  }
+  console.error('서버 오류:', err.message);
+  res.status(500).json({ error: '서버 오류가 발생했습니다' });
+}
