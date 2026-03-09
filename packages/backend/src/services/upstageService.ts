@@ -1,8 +1,8 @@
 import FormData from 'form-data';
-import fetch from 'node-fetch';
 import { parseUpstageResponse } from '../upstageParsing.js';
 import type { OcrResult } from '../types.js';
 import { logger } from '../utils/logger.js';
+import { fetchWithRetry } from '../utils/retry.js';
 
 export async function callOcr(
   fileBuffer: Buffer,
@@ -12,13 +12,15 @@ export async function callOcr(
   const formData = new FormData();
   formData.append('document', fileBuffer, { filename, contentType: mimetype });
 
-  const response = await fetch('https://api.upstage.ai/v1/document-ai/ocr', {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${process.env.UPSTAGE_API_KEY}`,
+  const response = await fetchWithRetry(
+    'https://api.upstage.ai/v1/document-ai/ocr',
+    {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${process.env.UPSTAGE_API_KEY}` },
+      body: formData,
     },
-    body: formData,
-  });
+    { maxAttempts: 3 }
+  );
 
   if (!response.ok) {
     const errorBody = await response.text();

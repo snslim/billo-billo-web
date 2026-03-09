@@ -16,6 +16,7 @@ export async function fetchWithRetry(
 ): Promise<Response> {
   const { maxAttempts = 3, baseDelayMs = 1000, timeoutMs } = options;
 
+  let lastResponse: Response | undefined;
   let lastError: Error | undefined;
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
@@ -38,7 +39,7 @@ export async function fetchWithRetry(
         return response;
       }
 
-      lastError = new Error(`HTTP ${response.status}`);
+      lastResponse = response;
       logger.warn({ attempt, maxAttempts, status: response.status }, '외부 API 재시도 예정');
     } catch (error) {
       lastError = error instanceof Error ? error : new Error(String(error));
@@ -51,5 +52,6 @@ export async function fetchWithRetry(
     }
   }
 
+  if (lastResponse) return lastResponse;
   throw lastError ?? new Error('fetchWithRetry 실패');
 }
