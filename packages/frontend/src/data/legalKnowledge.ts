@@ -87,23 +87,13 @@ export const TAX_LAW_KNOWLEDGE_BASE = [
     category: 'reporting',
   },
   {
-    id: 'vat-60',
-    source: '부가가치세법 제60조 (가산세)',
+    id: 'vat-60-false-entry',
+    source: '부가가치세법 제60조 제7항 (합계표 부실기재 가산세)',
     content:
-      '1. 세금계산서를 발급시기가 지난 후 재화 또는 용역의 공급시기가 속하는 과세기간에 대한 확정신고 기한까지 발급하는 경우: 공급가액의 1%.\n2. 세금계산서를 발급하지 아니한 경우: 공급가액의 2% 가산세가 부과된다.',
-    tags: ['가산세', '지연발급', '미발급', '1%', '2%'],
-    applicableRoles: ['supplier'],
-    roleWeight: 0.25,
-    category: 'penalty',
-  },
-  {
-    id: 'vat-60-receiver',
-    source: '부가가치세법 제60조 제7항 (매입자 가산세)',
-    content:
-      '공급받는 자가 세금계산서를 발급시기 이후에 수취한 경우로서 공급시기가 속하는 과세기간의 확정신고기한까지 수취하면 공급가액의 0.5% 가산세가 부과된다. 또한 매입처별 세금계산서 합계표의 기재사항이 사실과 다르게 적힌 경우 공급가액의 0.5% 가산세가 부과된다.',
-    tags: ['가산세', '지연수취', '합계표', '0.5%'],
+      '매입처별 세금계산서 합계표의 기재사항이 사실과 다르게 적힌 경우 공급가액의 0.5% 가산세가 부과된다.',
+    tags: ['합계표', '부실기재', '가산세', '0.5%'],
     applicableRoles: ['receiver'],
-    roleWeight: 0.25,
+    roleWeight: 0.2,
     category: 'penalty',
   },
   {
@@ -300,10 +290,6 @@ async function ensureLawEmbeddings(): Promise<void> {
   TAX_LAW_KNOWLEDGE_BASE.forEach((law, i) => {
     embeddingCache.set(law.id, embeddings[i]);
   });
-}
-
-export function getEmbeddingCacheSize(): number {
-  return embeddingCache.size;
 }
 
 function vectorSearch(
