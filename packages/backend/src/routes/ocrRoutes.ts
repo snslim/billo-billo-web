@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { upload } from '../middlewares/upload.js';
+import { upload, imageUpload } from '../middlewares/upload.js';
 import { uploadLimiter, ocrLimiter } from '../middlewares/rateLimiter.js';
 import { callOcr } from '../services/upstageService.js';
 import { AppError } from '../utils/AppError.js';
@@ -23,12 +23,10 @@ router.post('/upload', uploadLimiter, upload.single('file'), (req: Request, res:
 router.post(
   '/ocr',
   ocrLimiter,
-  upload.single('file'),
+  imageUpload.single('file'),
   asyncHandler(async (req: Request, res: Response) => {
     const file = req.file;
     if (!file) throw new AppError(400, '파일이 없습니다');
-    if (!file.mimetype.startsWith('image/'))
-      throw new AppError(400, '이미지 파일만 OCR 처리 가능합니다');
 
     const ocrResult = await callOcr(file.buffer, file.originalname, file.mimetype);
     res.json(ocrResult);
