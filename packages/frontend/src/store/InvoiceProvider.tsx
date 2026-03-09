@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useReducer } from 'react';
+import { createContext, useContext, useEffect, useReducer, useRef } from 'react';
 import toast from 'react-hot-toast';
 import type { AppState, AppAction } from './invoiceReducer';
 import { invoiceReducer, initialState } from './invoiceReducer';
@@ -13,15 +13,25 @@ interface InvoiceContextValue {
 
 const InvoiceContext = createContext<InvoiceContextValue | null>(null);
 
+function isValidStep(step: unknown): step is AppStep {
+  return typeof step === 'number' && step >= AppStep.ROLE_SELECTION && step <= AppStep.ADVISORY;
+}
+
 function loadFromSession(): AppState {
   try {
     const saved = sessionStorage.getItem(SESSION_KEY);
     if (!saved) return initialState;
 
     const parsed = JSON.parse(saved) as AppState;
+    if (!isValidStep(parsed.currentStep)) return initialState;
     if (parsed.currentStep === AppStep.ROLE_SELECTION) return initialState;
 
-    return { ...parsed, file: null };
+    const restored = { ...parsed, file: null };
+    if (restored.currentStep === AppStep.EXTRACTION && !restored.invoiceData) {
+      restored.currentStep = AppStep.UPLOAD;
+    }
+
+    return restored;
   } catch {
     return initialState;
   }
@@ -37,13 +47,15 @@ function saveToSession(state: AppState): void {
 }
 
 export function InvoiceProvider({ children }: { children: React.ReactNode }) {
-  const [state, dispatch] = useReducer(invoiceReducer, initialState, () => {
-    const restored = loadFromSession();
-    if (restored.currentStep > AppStep.ROLE_SELECTION) {
-      setTimeout(() => toast('이전 세션을 복원했습니다', { icon: '🔄' }), 300);
+  const [state, dispatch] = useReducer(invoiceReducer, initialState, loadFromSession);
+  const isRestored = useRef(state.currentStep > AppStep.ROLE_SELECTION);
+
+  useEffect(() => {
+    if (isRestored.current) {
+      toast('이전 세션을 복원했습니다', { icon: '🔄' });
+      isRestored.current = false;
     }
-    return restored;
-  });
+  }, []);
 
   useEffect(() => {
     saveToSession(state);

@@ -4,7 +4,7 @@ interface LayoutProps {
 
 export function Layout({ children }: LayoutProps) {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       <header className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-4xl mx-auto px-4 py-4">
           <h1 className="text-xl font-bold text-gray-900">Billo-Billo</h1>
@@ -12,7 +12,7 @@ export function Layout({ children }: LayoutProps) {
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-4 py-8">{children}</main>
+      <main className="max-w-4xl mx-auto px-4 py-8 grow">{children}</main>
 
       <footer className="border-t border-gray-200 bg-white mt-auto">
         <div className="max-w-4xl mx-auto px-4 py-4">
