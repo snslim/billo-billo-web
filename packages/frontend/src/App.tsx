@@ -61,6 +61,14 @@ function App() {
   return (
     <Layout>
       <StepIndicator currentStep={currentStep} />
+      {currentStep > AppStep.ROLE_SELECTION && currentStep < AppStep.ADVISORY && (
+        <button
+          onClick={() => dispatch({ type: 'GO_BACK' })}
+          className="mb-4 flex items-center gap-1 text-sm text-slate-500 hover:text-slate-800 transition-colors"
+        >
+          ← 이전 단계
+        </button>
+      )}
       {renderStep()}
     </Layout>
   );
