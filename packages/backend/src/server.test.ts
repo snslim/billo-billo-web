@@ -1,13 +1,11 @@
-import { describe, it, expect, vi, beforeAll, afterAll } from 'vitest';
+import { describe, it, expect, vi, beforeAll } from 'vitest';
 import request from 'supertest';
 import type { Express } from 'express';
-import type { Server } from 'http';
 
 process.env.FRONTEND_URL = 'http://localhost:5173';
 process.env.UPSTAGE_API_KEY = 'test-upstage-key';
 process.env.NTS_API_KEY = 'test-nts-key';
 process.env.GEMINI_API_KEY = 'test-gemini-key';
-process.env.PORT = '3099';
 
 const mockFetch = vi.fn();
 vi.mock('node-fetch', () => ({
@@ -16,18 +14,10 @@ vi.mock('node-fetch', () => ({
 
 describe('Server API', () => {
   let app: Express;
-  let server: Server;
 
   beforeAll(async () => {
-    const serverModule = await import('./server.js');
-    app = serverModule.app;
-    server = serverModule.server;
-  });
-
-  afterAll(() => {
-    return new Promise<void>((resolve) => {
-      server.close(() => resolve());
-    });
+    const appModule = await import('./app.js');
+    app = appModule.app;
   });
 
   describe('GET /api/health', () => {
