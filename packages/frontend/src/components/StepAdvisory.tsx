@@ -121,6 +121,10 @@ export const StepAdvisory = ({ data, role, validationReport, userAnswers, onRese
               </div>
             ) : advisory ? (
               <div className="space-y-8 animate-fade-in">
+                <p className="text-xs text-slate-400 leading-relaxed">
+                  이 분석은 AI가 부가가치세법 규정을 참고하여 추론한 것입니다. 정확한 판단은
+                  세무사와 상담하세요.
+                </p>
                 {isMock && (
                   <div className="bg-amber-50 border border-amber-200 p-3 rounded-lg flex items-start gap-2">
                     <AlertTriangle className="w-4 h-4 text-amber-600 mt-0.5 shrink-0" />
