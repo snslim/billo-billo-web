@@ -1,6 +1,6 @@
 import type { InvoiceData, UserRole, AIAdvisoryResponse, UserChecklistAnswers } from '../types';
 import { isSupplierAnswers } from '../types';
-import { retrieveRelevantLawsByVector } from '../data/legalKnowledge';
+import { retrieveRelevantLaws } from '../data/legalKnowledge';
 import type { LegalReference } from '../data/legalKnowledge';
 import { anonymizeInvoiceData } from '../utils/formatting';
 import { config } from '../config';
@@ -163,7 +163,7 @@ export const getTaxAdvice = async (
 
   let relevantLaws: LegalReference[] = [];
   try {
-    relevantLaws = await retrieveRelevantLawsByVector(ragQuery, role);
+    relevantLaws = await retrieveRelevantLaws(ragQuery, role);
   } catch (e) {
     console.warn('RAG Retrieval Failed:', e);
   }

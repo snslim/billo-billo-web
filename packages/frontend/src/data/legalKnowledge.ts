@@ -321,7 +321,47 @@ function vectorSearch(
   });
 }
 
-export const retrieveRelevantLawsByVector = async (
+function tokenize(text: string): string[] {
+  return text
+    .replace(/[§①②③④⑤⑥⑦()·,./]/g, ' ')
+    .split(/\s+/)
+    .filter((t) => t.length >= 2);
+}
+
+export function keywordSearch(query: string): { law: LegalReference; score: number }[] {
+  const queryTokens = tokenize(query);
+  if (queryTokens.length === 0) return TAX_LAW_KNOWLEDGE_BASE.map((law) => ({ law, score: 0 }));
+
+  return TAX_LAW_KNOWLEDGE_BASE.map((law) => {
+    const docText = `${law.source} ${law.content} ${law.tags.join(' ')}`;
+    const docTokens = tokenize(docText);
+    const hits = queryTokens.filter((qt) => docTokens.some((dt) => dt.includes(qt)));
+    return { law, score: hits.length / queryTokens.length };
+  });
+}
+
+function reciprocalRankFusion(
+  rankedLists: { law: LegalReference; score: number }[][],
+  k = 60
+): { law: LegalReference; score: number }[] {
+  const fusedScores = new Map<string, { law: LegalReference; score: number }>();
+
+  for (const list of rankedLists) {
+    const sorted = [...list].sort((a, b) => b.score - a.score);
+    sorted.forEach((item, rank) => {
+      const existing = fusedScores.get(item.law.id);
+      const rrfScore = 1 / (k + rank + 1);
+      fusedScores.set(item.law.id, {
+        law: item.law,
+        score: (existing?.score ?? 0) + rrfScore,
+      });
+    });
+  }
+
+  return [...fusedScores.values()].sort((a, b) => b.score - a.score);
+}
+
+export const retrieveRelevantLaws = async (
   query: string,
   role: 'supplier' | 'receiver' | null
 ): Promise<LegalReference[]> => {
@@ -329,14 +369,17 @@ export const retrieveRelevantLawsByVector = async (
     await ensureLawEmbeddings();
 
     const [queryVector] = await fetchEmbeddings([query]);
-    const scored = vectorSearch(queryVector, role);
+    const vectorResults = vectorSearch(queryVector, role);
+    const keywordResults = keywordSearch(query);
+    const fused = reciprocalRankFusion([vectorResults, keywordResults]);
 
-    return scored
+    return fused.map((item) => item.law).slice(0, 3);
+  } catch (e) {
+    console.error('Hybrid Search Failed, falling back to keyword search', e);
+    const keywordResults = keywordSearch(query);
+    return keywordResults
       .sort((a, b) => b.score - a.score)
       .map((item) => item.law)
       .slice(0, 3);
-  } catch (e) {
-    console.error('Vector Search Failed, falling back to basic filter', e);
-    return TAX_LAW_KNOWLEDGE_BASE.slice(0, 3);
   }
 };
