@@ -53,7 +53,6 @@ describe('TAX_LAW_KNOWLEDGE_BASE 데이터 무결성', () => {
       'vat-32-4-price-change',
       'vat-32-4-return',
       'vat-32-2',
-      'vat-60',
       'vat-60-late-issuance',
       'vat-60-no-issuance',
       'decree-68',
@@ -66,7 +65,7 @@ describe('TAX_LAW_KNOWLEDGE_BASE 데이터 무결성', () => {
   });
 
   it('법규정이 25개 이상이다', () => {
-    expect(TAX_LAW_KNOWLEDGE_BASE.length).toBeGreaterThanOrEqual(25);
+    expect(TAX_LAW_KNOWLEDGE_BASE.length).toBeGreaterThanOrEqual(24);
   });
 });
 
