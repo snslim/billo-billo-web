@@ -27,6 +27,7 @@ import {
 interface Props {
   data: InvoiceData;
   role: UserRole;
+  isDemo: boolean;
   onProceed: (report: ValidationReport, userAnswers: UserChecklistAnswers) => void;
 }
 
@@ -50,21 +51,21 @@ const checkRequiredFields = (data: InvoiceData): ValidationResult => {
   };
 };
 
-export const StepValidation = ({ data, role, onProceed }: Props) => {
+export const StepValidation = ({ data, role, isDemo, onProceed }: Props) => {
   const [report, setReport] = useState<ValidationReport | null>(null);
   const [userAnswers, setUserAnswers] = useState<UserChecklistAnswers>(createDefaultAnswers(role));
 
   useEffect(() => {
     let isMounted = true;
     const runValidation = async () => {
-      const result = await validateInvoiceAsync(data, role);
+      const result = await validateInvoiceAsync(data, role, { isDemo });
       if (isMounted) setReport(result);
     };
     runValidation();
     return () => {
       isMounted = false;
     };
-  }, [data, role]);
+  }, [data, role, isDemo]);
 
   const setAnswer = (key: ChecklistKey, value: ChecklistAnswer) => {
     setUserAnswers((prev) => ({ ...prev, [key]: value }));

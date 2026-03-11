@@ -124,6 +124,20 @@ const fetchBusinessStatusBulk = async (regNos: string[]): Promise<Map<string, Bu
   return resultMap;
 };
 
+const buildDemoStatusMap = (regNos: string[]): Map<string, BusinessStatus> => {
+  const resultMap = new Map<string, BusinessStatus>();
+  regNos.forEach((regNo) => {
+    const cleaned = regNo.replace(/-/g, '');
+    resultMap.set(cleaned, {
+      b_no: cleaned,
+      b_stt: '계속사업자',
+      b_stt_cd: '01',
+      tax_type: '일반과세자',
+    });
+  });
+  return resultMap;
+};
+
 const checkBusinessStatusWithDate = (
   invoiceDate: string,
   status: BusinessStatus | undefined,
@@ -191,7 +205,8 @@ const checkBusinessStatusWithDate = (
 
 export const validateInvoiceAsync = async (
   data: InvoiceData,
-  _role: UserRole
+  _role: UserRole,
+  options?: { isDemo?: boolean }
 ): Promise<ValidationReport> => {
   let supplierRegNoValid = validateRegNo(data.supplierRegNo, '공급자 번호');
   let receiverRegNoValid = validateRegNo(data.receiverRegNo, '공급받는자 번호');
@@ -202,7 +217,9 @@ export const validateInvoiceAsync = async (
   if (supplierRegNoValid.isValid) regNosToFetch.push(data.supplierRegNo);
   if (receiverRegNoValid.isValid) regNosToFetch.push(data.receiverRegNo);
 
-  const statusMap = await fetchBusinessStatusBulk(regNosToFetch);
+  const statusMap = options?.isDemo
+    ? buildDemoStatusMap(regNosToFetch)
+    : await fetchBusinessStatusBulk(regNosToFetch);
 
   let supplierStatus: ValidationResult = { isValid: false, message: '조회 대기', type: 'loading' };
   let receiverStatus: ValidationResult = { isValid: false, message: '조회 대기', type: 'loading' };
