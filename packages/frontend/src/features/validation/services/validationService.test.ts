@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { validateInvoiceAsync } from './validationService';
-import type { InvoiceData, UserRole } from '../types';
+import type { InvoiceData, UserRole } from '../../../types';
 
-vi.mock('../config', () => ({
+vi.mock('../../../config', () => ({
   config: {
     api: {
       baseUrl: 'http://localhost:3000',
