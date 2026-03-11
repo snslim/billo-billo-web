@@ -12,9 +12,18 @@ describe('StepUpload', () => {
   });
   const mockOnUpload = vi.fn();
   const mockOnCancel = vi.fn();
+  const mockOnDemoSelect = vi.fn();
 
   it('파일이 없을 때 업로드 영역을 표시한다', () => {
-    render(<StepUpload file={null} onUpload={mockOnUpload} onCancel={mockOnCancel} />);
+    render(
+      <StepUpload
+        file={null}
+        role="receiver"
+        onUpload={mockOnUpload}
+        onCancel={mockOnCancel}
+        onDemoSelect={mockOnDemoSelect}
+      />
+    );
 
     expect(screen.getByText(/파일을 드래그/i)).toBeInTheDocument();
   });
@@ -22,7 +31,15 @@ describe('StepUpload', () => {
   it('파일이 있을 때 파일명을 표시한다', () => {
     const mockFile = new File(['test'], 'test.jpg', { type: 'image/jpeg' });
 
-    render(<StepUpload file={mockFile} onUpload={mockOnUpload} onCancel={mockOnCancel} />);
+    render(
+      <StepUpload
+        file={mockFile}
+        role="receiver"
+        onUpload={mockOnUpload}
+        onCancel={mockOnCancel}
+        onDemoSelect={mockOnDemoSelect}
+      />
+    );
 
     expect(screen.getByText(/test\.jpg/)).toBeInTheDocument();
   });
@@ -30,7 +47,15 @@ describe('StepUpload', () => {
   it('파일이 있을 때 이미지를 표시한다', () => {
     const mockFile = new File(['test'], 'test.jpg', { type: 'image/jpeg' });
 
-    render(<StepUpload file={mockFile} onUpload={mockOnUpload} onCancel={mockOnCancel} />);
+    render(
+      <StepUpload
+        file={mockFile}
+        role="receiver"
+        onUpload={mockOnUpload}
+        onCancel={mockOnCancel}
+        onDemoSelect={mockOnDemoSelect}
+      />
+    );
 
     expect(screen.getByAltText('업로드된 세금계산서')).toBeInTheDocument();
   });
@@ -39,7 +64,15 @@ describe('StepUpload', () => {
     const user = userEvent.setup();
     const mockFile = new File(['test'], 'test.jpg', { type: 'image/jpeg' });
 
-    render(<StepUpload file={mockFile} onUpload={mockOnUpload} onCancel={mockOnCancel} />);
+    render(
+      <StepUpload
+        file={mockFile}
+        role="receiver"
+        onUpload={mockOnUpload}
+        onCancel={mockOnCancel}
+        onDemoSelect={mockOnDemoSelect}
+      />
+    );
 
     const buttons = screen.getAllByRole('button');
     await user.click(buttons[0]);

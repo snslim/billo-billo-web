@@ -39,15 +39,21 @@ describe('StepValidation', () => {
   });
 
   it('마운트 시 검증 함수를 호출한다', async () => {
-    render(<StepValidation data={mockData} role="receiver" onProceed={mockOnProceed} />);
+    render(
+      <StepValidation data={mockData} role="receiver" isDemo={false} onProceed={mockOnProceed} />
+    );
 
     await waitFor(() => {
-      expect(validationService.validateInvoiceAsync).toHaveBeenCalledWith(mockData, 'receiver');
+      expect(validationService.validateInvoiceAsync).toHaveBeenCalledWith(mockData, 'receiver', {
+        isDemo: false,
+      });
     });
   });
 
   it('자동 확인 항목 2개를 렌더링한다', async () => {
-    render(<StepValidation data={mockData} role="receiver" onProceed={mockOnProceed} />);
+    render(
+      <StepValidation data={mockData} role="receiver" isDemo={false} onProceed={mockOnProceed} />
+    );
 
     await waitFor(() => {
       expect(screen.getByText('상대방 사업자 상태')).toBeInTheDocument();
@@ -56,7 +62,9 @@ describe('StepValidation', () => {
   });
 
   it('매입자 역할 시 3개 체크리스트 항목을 렌더링한다', async () => {
-    render(<StepValidation data={mockData} role="receiver" onProceed={mockOnProceed} />);
+    render(
+      <StepValidation data={mockData} role="receiver" isDemo={false} onProceed={mockOnProceed} />
+    );
 
     await waitFor(() => {
       for (const item of RECEIVER_CHECKLIST) {
@@ -71,7 +79,9 @@ describe('StepValidation', () => {
   });
 
   it('공급자 역할 시 6개 체크리스트 항목을 렌더링한다', async () => {
-    render(<StepValidation data={mockData} role="supplier" onProceed={mockOnProceed} />);
+    render(
+      <StepValidation data={mockData} role="supplier" isDemo={false} onProceed={mockOnProceed} />
+    );
 
     await waitFor(() => {
       for (const item of SUPPLIER_CHECKLIST) {
@@ -87,7 +97,9 @@ describe('StepValidation', () => {
 
   it('예 버튼 클릭 시 선택 상태로 전환된다', async () => {
     const user = userEvent.setup();
-    render(<StepValidation data={mockData} role="receiver" onProceed={mockOnProceed} />);
+    render(
+      <StepValidation data={mockData} role="receiver" isDemo={false} onProceed={mockOnProceed} />
+    );
 
     await waitFor(() => {
       expect(screen.getByText(RECEIVER_CHECKLIST[0].title)).toBeInTheDocument();
@@ -105,7 +117,9 @@ describe('StepValidation', () => {
 
   it('아니오 버튼 클릭 시 선택 상태로 전환된다', async () => {
     const user = userEvent.setup();
-    render(<StepValidation data={mockData} role="receiver" onProceed={mockOnProceed} />);
+    render(
+      <StepValidation data={mockData} role="receiver" isDemo={false} onProceed={mockOnProceed} />
+    );
 
     await waitFor(() => {
       expect(screen.getByText(RECEIVER_CHECKLIST[0].title)).toBeInTheDocument();
@@ -121,7 +135,9 @@ describe('StepValidation', () => {
 
   it('선택된 버튼을 다시 클릭하면 미응답으로 돌아간다', async () => {
     const user = userEvent.setup();
-    render(<StepValidation data={mockData} role="receiver" onProceed={mockOnProceed} />);
+    render(
+      <StepValidation data={mockData} role="receiver" isDemo={false} onProceed={mockOnProceed} />
+    );
 
     await waitFor(() => {
       expect(screen.getByText(RECEIVER_CHECKLIST[0].title)).toBeInTheDocument();
@@ -142,7 +158,14 @@ describe('StepValidation', () => {
 
   it('영세율 세금계산서일 때 isZeroRate 항목에 하이라이트가 표시된다', async () => {
     const zeroRateData: InvoiceData = { ...mockData, docType: 'zero_rate' };
-    render(<StepValidation data={zeroRateData} role="supplier" onProceed={mockOnProceed} />);
+    render(
+      <StepValidation
+        data={zeroRateData}
+        role="supplier"
+        isDemo={false}
+        onProceed={mockOnProceed}
+      />
+    );
 
     await waitFor(() => {
       expect(screen.getByText(/영세율로 발급되었습니다/)).toBeInTheDocument();
@@ -150,7 +173,9 @@ describe('StepValidation', () => {
   });
 
   it('일반 세금계산서일 때 영세율 하이라이트가 표시되지 않는다', async () => {
-    render(<StepValidation data={mockData} role="supplier" onProceed={mockOnProceed} />);
+    render(
+      <StepValidation data={mockData} role="supplier" isDemo={false} onProceed={mockOnProceed} />
+    );
 
     await waitFor(() => {
       expect(screen.getByText(SUPPLIER_CHECKLIST[0].title)).toBeInTheDocument();
