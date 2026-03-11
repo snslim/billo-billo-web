@@ -295,7 +295,19 @@ export const StepValidation = ({ data, role, isDemo, suggestedAnswers, onProceed
       {/* 다음 단계 버튼 */}
       <div className="flex justify-center mt-8">
         <button
-          onClick={() => onProceed(report, userAnswers)}
+          onClick={() => {
+            const record = userAnswers as unknown as Record<string, ChecklistAnswer>;
+            const unansweredCount = checklistItems.filter(
+              (item) => record[item.key] === 'unanswered'
+            ).length;
+            if (unansweredCount > 0) {
+              const confirmed = window.confirm(
+                `응답하지 않은 질문이 ${unansweredCount}개 있습니다.\n미응답 항목은 AI 조언의 정확도에 영향을 줄 수 있습니다.\n\n그래도 진행하시겠습니까?`
+              );
+              if (!confirmed) return;
+            }
+            onProceed(report, userAnswers);
+          }}
           className={`w-full font-semibold py-4 px-4 rounded-xl flex items-center justify-center transition-all shadow-md text-sm group
             ${
               hasAutoCheckIssue
