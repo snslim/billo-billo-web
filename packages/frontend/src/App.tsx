@@ -1,13 +1,13 @@
 import { Layout } from './components/Layout';
 import { StepIndicator } from './components/StepIndicator';
-import { StepRole } from './components/StepRole';
-import { StepUpload } from './components/StepUpload';
-import { StepExtraction } from './components/StepExtraction';
+import { StepRole } from './features/role-selection';
+import { StepUpload } from './features/upload';
+import { StepExtraction } from './features/extraction';
 import { StepValidation } from './features/validation';
 import { StepAdvisory } from './features/advisory';
 import { AppStep } from './types';
 import { useInvoice } from './store/InvoiceProvider';
-import type { DemoScenario } from './data/demoScenarios';
+import type { DemoScenario } from './features/upload';
 
 function App() {
   const { state, dispatch } = useInvoice();

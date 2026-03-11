@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { invoiceReducer, initialState } from './invoiceReducer';
 import { AppStep } from '../types';
 import type { InvoiceData, ValidationReport, ReceiverChecklistAnswers } from '../types';
-import { DEMO_SCENARIOS } from '../data/demoScenarios';
+import { DEMO_SCENARIOS } from '../features/upload/data/demoScenarios';
 
 const mockInvoiceData: InvoiceData = {
   docType: 'general',

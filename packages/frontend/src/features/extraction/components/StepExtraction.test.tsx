@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { StepExtraction } from './StepExtraction';
-import type { InvoiceData } from '../types';
+import type { InvoiceData } from '../../../types';
 
 describe('StepExtraction', () => {
   const mockFile = new File(['test'], 'test.jpg', { type: 'image/jpeg' });
