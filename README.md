@@ -59,7 +59,19 @@
 
 ### Backend
 
-![NodeJS](https://img.shields.io/badge/node.js-6DA55F?style=for-the-badge&logo=node.js&logoColor=white) ![Express.js](https://img.shields.io/badge/express.js-%23404d59.svg?style=for-the-badge&logo=express&logoColor=%2361DAFB) ![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white)
+![NodeJS](https://img.shields.io/badge/node.js-6DA55F?style=for-the-badge&logo=node.js&logoColor=white) ![Express.js](https://img.shields.io/badge/express.js-%23404d59.svg?style=for-the-badge&logo=express&logoColor=%2361DAFB) ![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white) ![Pino](https://img.shields.io/badge/pino-%23687634.svg?style=for-the-badge&logo=pino&logoColor=white) ![Helmet](https://img.shields.io/badge/helmet-%23FFFFFF.svg?style=for-the-badge&logo=helmet&logoColor=black)
+
+### Testing
+
+![Vitest](https://img.shields.io/badge/vitest-%236E9F18.svg?style=for-the-badge&logo=vitest&logoColor=white) ![Testing Library](https://img.shields.io/badge/testing%20library-%23E33332.svg?style=for-the-badge&logo=testinglibrary&logoColor=white) ![Supertest](https://img.shields.io/badge/supertest-%23E34F26.svg?style=for-the-badge)
+
+### CI & Code Quality
+
+![GitHub Actions](https://img.shields.io/badge/github%20actions-%232671E5.svg?style=for-the-badge&logo=githubactions&logoColor=white) ![ESLint](https://img.shields.io/badge/eslint-%234B32C3.svg?style=for-the-badge&logo=eslint&logoColor=white) ![Prettier](https://img.shields.io/badge/prettier-%23F7B93E.svg?style=for-the-badge&logo=prettier&logoColor=black) ![Husky](https://img.shields.io/badge/husky-%23161717.svg?style=for-the-badge)
+
+### AI & External APIs
+
+![Google Gemini](https://img.shields.io/badge/google%20gemini-%238E75B2.svg?style=for-the-badge&logo=googlegemini&logoColor=white) ![UPSTAGE](https://img.shields.io/badge/UPSTAGE%20Document%20AI-%23512BD4.svg?style=for-the-badge) ![국세청 API](https://img.shields.io/badge/국세청%20오픈%20API-%230066CC.svg?style=for-the-badge)
 
 <br>
 
@@ -329,27 +341,42 @@ AI는 검색된 법률 조항을 기반으로 정확한 조언을 제공하며, 
 
 # **🗓 Schedule**
 
-**프로젝트 기간**: 2주 (2026.01.26 ~ 2026.02.08)
+**프로젝트 기간**: 2026.01.26 ~
 
 <details>
 <summary><b>1주차 (1/26 ~ 2/1): 기획 및 설계</b></summary>
 
 - 아이디어 구체화 및 기능 정의
-- 기술 스택 선정 (React, Express, Typescript)
+- 기술 스택 선정 (React, Express, TypeScript)
 - UI/UX 설계 (5단계 워크플로우)
 - API 명세서 작성
 
 </details>
 
 <details>
-<summary><b>2주차 (2/2 ~ 2/8): 구현 및 테스트</b></summary>
+<summary><b>2주차 (2/2 ~ 2/8): MVP 구현</b></summary>
 
-- Frontend 구현 (Step별 컴포넌트)
-- Backend API 구현 (Express 서버)
-- OCR 연동 및 정규식 기반 파싱 로직 개발
-- 데이터 검증 로직 구현
-- Gemini AI 연동 및 RAG 시스템 구축
-- Backend/Frontend 테스트 작성
+- 모노레포 구조 설정 (npm workspaces)
+- Frontend 5단계 컴포넌트 구현 (역할 선택 → 업로드 → 추출 → 검증 → AI 자문)
+- Backend REST API 구현 (OCR, 국세청 조회, AI 자문 엔드포인트)
+- UPSTAGE OCR 연동 및 정규식 기반 세금계산서 파싱
+- Gemini Embedding + RAG 기반 법률 자문 시스템 구축
+- Vitest + Testing Library / Supertest 기반 테스트 작성
+
+</details>
+
+<details>
+<summary><b>3주차 (3/5 ~ 3/11): 고도화</b></summary>
+
+- 백엔드 아키텍처 재설계 (서비스 레이어, 미들웨어, 에러 핸들링 분리)
+- 프론트엔드 상태 관리 전환 (useReducer + Context)
+- RAG 시스템 강화 (법조문 9개→25개, 키워드 + RRF 하이브리드 검색, 임베딩 캐싱)
+- 보안 강화 (Helmet, CORS, Rate Limiting, 개인정보 마스킹)
+- CI 및 코드 품질 (GitHub Actions, ESLint, Prettier, Husky)
+- 구조화 로깅 (Pino + AsyncLocalStorage 기반 요청 추적)
+- 외부 API 리질리언스 (fetchWithRetry 지수 백오프)
+- 데모 모드 구현 (4개 시나리오)
+- Feature 기반 디렉토리 구조 전환
 
 </details>
 
@@ -360,5 +387,7 @@ AI는 검색된 법률 조항을 기반으로 정확한 조언을 제공하며, 
 7년간 회계사 시험을 준비하며 쌓은 도메인 지식을 기술로 풀어내고 싶어 개발자로 전환했습니다.
 
 첫 프로젝트로 세무 자동화를 선택했습니다. 다양한 세금계산서 양식에서 정확한 항목을 추출하는 OCR 파싱과 RAG 기반 법률 자문 시스템을 구축하며, 도메인 지식이 강력한 무기가 될 수 있음을 경험했습니다. 법률 자문의 민감성을 고려해 매 단계를 신중하게 설계했지만, 복잡한 문제를 기술로 풀어가는 여정은 즐거웠습니다.
+
+MVP 완성 이후에도 백엔드 아키텍처 재설계, 테스트 작성, CI/CD 구축 등 실무 수준의 코드 품질을 갖추기 위한 개선을 계속했습니다. "돌아가는 코드"를 넘어 "유지보수할 수 있는 코드"를 고민하는 과정에서 엔지니어로서의 기초 체력을 쌓을 수 있었습니다.
 
 앞으로는 도메인 전문성과 기술을 결합하여, 다양한 분야에서 실질적인 문제를 해결하는 개발자로 성장하고 싶습니다.
