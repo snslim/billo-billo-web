@@ -7,8 +7,8 @@ import type {
   UserChecklistAnswers,
   ChecklistAnswer,
   ChecklistKey,
-} from '../types';
-import { createDefaultAnswers } from '../types';
+} from '../../../types';
+import { createDefaultAnswers } from '../../../types';
 import { validateInvoiceAsync } from '../services/validationService';
 import { SUPPLIER_CHECKLIST, RECEIVER_CHECKLIST } from '../data/checklist';
 import type { ChecklistItemMeta } from '../data/checklist';

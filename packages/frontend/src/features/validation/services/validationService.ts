@@ -1,6 +1,6 @@
-import type { InvoiceData, UserRole, ValidationReport, ValidationResult } from '../types';
+import type { InvoiceData, UserRole, ValidationReport, ValidationResult } from '../../../types';
 import { parse, isValid, isAfter } from 'date-fns';
-import { config } from '../config';
+import { config } from '../../../config';
 
 interface BusinessStatus {
   b_no: string;

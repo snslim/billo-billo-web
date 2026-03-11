@@ -2,11 +2,11 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { StepValidation } from './StepValidation';
-import type { InvoiceData, ValidationReport } from '../types';
+import type { InvoiceData, ValidationReport } from '../../../types';
 import * as validationService from '../services/validationService';
 import { SUPPLIER_CHECKLIST, RECEIVER_CHECKLIST } from '../data/checklist';
 
-vi.mock('../config', () => ({
+vi.mock('../../../config', () => ({
   config: { api: { baseUrl: 'http://localhost:3000', timeout: 10000 } },
 }));
 vi.mock('../services/validationService');

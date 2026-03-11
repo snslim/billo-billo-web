@@ -3,7 +3,7 @@ import { StepIndicator } from './components/StepIndicator';
 import { StepRole } from './components/StepRole';
 import { StepUpload } from './components/StepUpload';
 import { StepExtraction } from './components/StepExtraction';
-import { StepValidation } from './components/StepValidation';
+import { StepValidation } from './features/validation';
 import { StepAdvisory } from './components/StepAdvisory';
 import { AppStep } from './types';
 import { useInvoice } from './store/InvoiceProvider';

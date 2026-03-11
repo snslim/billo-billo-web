@@ -1,4 +1,4 @@
-import type { ReceiverChecklistAnswers, SupplierChecklistAnswers } from '../types';
+import type { ReceiverChecklistAnswers, SupplierChecklistAnswers } from '../../../types';
 
 type ChecklistCategory = 'issuance' | 'situational' | 'reporting';
 
