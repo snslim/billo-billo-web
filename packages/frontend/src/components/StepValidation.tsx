@@ -28,6 +28,7 @@ interface Props {
   data: InvoiceData;
   role: UserRole;
   isDemo: boolean;
+  suggestedAnswers?: Partial<UserChecklistAnswers>;
   onProceed: (report: ValidationReport, userAnswers: UserChecklistAnswers) => void;
 }
 
@@ -51,9 +52,12 @@ const checkRequiredFields = (data: InvoiceData): ValidationResult => {
   };
 };
 
-export const StepValidation = ({ data, role, isDemo, onProceed }: Props) => {
+export const StepValidation = ({ data, role, isDemo, suggestedAnswers, onProceed }: Props) => {
   const [report, setReport] = useState<ValidationReport | null>(null);
-  const [userAnswers, setUserAnswers] = useState<UserChecklistAnswers>(createDefaultAnswers(role));
+  const [userAnswers, setUserAnswers] = useState<UserChecklistAnswers>(() => ({
+    ...createDefaultAnswers(role),
+    ...suggestedAnswers,
+  }));
 
   useEffect(() => {
     let isMounted = true;
