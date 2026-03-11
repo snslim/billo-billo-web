@@ -11,7 +11,16 @@ import type { DemoScenario } from './data/demoScenarios';
 
 function App() {
   const { state, dispatch } = useInvoice();
-  const { currentStep, role, file, invoiceData, validationReport, userAnswers, isDemo } = state;
+  const {
+    currentStep,
+    role,
+    file,
+    invoiceData,
+    validationReport,
+    userAnswers,
+    isDemo,
+    demoScenario,
+  } = state;
 
   const renderStep = () => {
     switch (currentStep) {
@@ -43,6 +52,7 @@ function App() {
             data={invoiceData}
             role={role}
             isDemo={isDemo}
+            suggestedAnswers={demoScenario?.suggestedAnswers}
             onProceed={(report, answers) =>
               dispatch({ type: 'PROCEED_TO_ADVISORY', report, answers })
             }
@@ -66,6 +76,17 @@ function App() {
   return (
     <Layout>
       <StepIndicator currentStep={currentStep} />
+      {isDemo && currentStep > AppStep.UPLOAD && (
+        <div className="mb-4 flex items-center gap-2 px-3 py-2 bg-blue-50 border border-blue-200 rounded-lg text-xs text-blue-700">
+          <span className="font-semibold bg-blue-600 text-white px-1.5 py-0.5 rounded text-[10px]">
+            DEMO
+          </span>
+          <span>
+            샘플 데이터로 체험 중 — {demoScenario?.name}
+            {demoScenario?.taxIssue && ` (${demoScenario.taxIssue})`}
+          </span>
+        </div>
+      )}
       {currentStep > AppStep.ROLE_SELECTION && currentStep < AppStep.ADVISORY && (
         <button
           onClick={() => dispatch({ type: 'GO_BACK' })}
