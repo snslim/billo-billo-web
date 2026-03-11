@@ -16,6 +16,7 @@
 
 - [💥 Motivation](#-motivation)
 - [🛠 Tech Stacks](#-tech-stacks)
+- [🏗 Architecture](#-architecture)
 - [🎯 Features](#-features)
 - [🏔 Challenges](#-challenges)
   - [1. 세금계산서 이미지에서 필요적 기재사항 추출](#1-세금계산서-이미지에서-필요적-기재사항-추출)
@@ -72,6 +73,54 @@
 ### AI & External APIs
 
 ![Google Gemini](https://img.shields.io/badge/google%20gemini-%238E75B2.svg?style=for-the-badge&logo=googlegemini&logoColor=white) ![UPSTAGE](https://img.shields.io/badge/UPSTAGE%20Document%20AI-%23512BD4.svg?style=for-the-badge) ![국세청 API](https://img.shields.io/badge/국세청%20오픈%20API-%230066CC.svg?style=for-the-badge)
+
+<br>
+
+# **🏗 Architecture**
+
+<br>
+
+### 모노레포 구조
+
+npm workspaces 기반 모노레포로 Frontend와 Backend를 단일 저장소에서 관리합니다.
+
+```
+billo-billo-web/
+├── packages/
+│   ├── frontend/                  # React 19 + TypeScript
+│   │   └── src/
+│   │       ├── features/          # 기능별 모듈
+│   │       │   ├── advisory/      #   AI 세무 자문
+│   │       │   ├── extraction/    #   OCR 결과 확인
+│   │       │   ├── role-selection/#   역할 선택
+│   │       │   ├── upload/        #   파일 업로드 + 데모
+│   │       │   └── validation/    #   검증 + 체크리스트
+│   │       ├── store/             # useReducer 상태 관리
+│   │       ├── components/        # 공통 UI 컴포넌트
+│   │       └── utils/             # 포맷팅 유틸리티
+│   └── backend/                   # Express + TypeScript
+│       └── src/
+│           ├── routes/            # API 엔드포인트 (OCR, 검증, AI, 헬스체크)
+│           ├── services/          # 외부 API 연동 (Gemini, NTS, Upstage)
+│           ├── middlewares/       # 보안, 로깅, 에러 처리, Rate Limiting
+│           └── utils/             # AppError, 재시도, 로거
+├── .github/workflows/             # CI 파이프라인
+└── package.json                   # 워크스페이스 루트
+```
+
+<br>
+
+### 시스템 흐름
+
+Frontend에서 5단계 워크플로우를 진행하며, 각 단계에서 Backend API를 호출합니다.
+
+| 단계 | Frontend | Backend API | External API |
+|------|----------|-------------|--------------|
+| 1. 역할 선택 | 공급자/매입자 선택 | — | — |
+| 2. 업로드 | 이미지 업로드 + 미리보기 | `/api/ocr` | UPSTAGE Document AI |
+| 3. 추출 확인 | 신뢰도 표시 + 수동 수정 | — | — |
+| 4. 검증 | 결과 표시 + 체크리스트 | `/api/validate` | 국세청 사업자 조회 |
+| 5. AI 자문 | 법률 근거 기반 조언 표시 | `/api/ai` | Gemini Embedding + LLM |
 
 <br>
 
