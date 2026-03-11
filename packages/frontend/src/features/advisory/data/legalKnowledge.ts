@@ -1,4 +1,4 @@
-import { config } from '../config';
+import { config } from '../../../config';
 
 export type LawCategory = 'issuance' | 'deduction' | 'penalty' | 'reporting' | 'general';
 

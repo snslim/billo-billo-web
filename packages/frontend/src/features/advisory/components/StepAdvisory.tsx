@@ -5,7 +5,7 @@ import type {
   ValidationReport,
   AIAdvisoryResponse,
   UserChecklistAnswers,
-} from '../types';
+} from '../../../types';
 import { getTaxAdvice } from '../services/geminiService';
 import {
   Bot,
