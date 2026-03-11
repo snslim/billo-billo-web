@@ -7,6 +7,7 @@ import { StepValidation } from './components/StepValidation';
 import { StepAdvisory } from './components/StepAdvisory';
 import { AppStep } from './types';
 import { useInvoice } from './store/InvoiceProvider';
+import type { DemoScenario } from './data/demoScenarios';
 
 function App() {
   const { state, dispatch } = useInvoice();
@@ -20,8 +21,10 @@ function App() {
         return (
           <StepUpload
             file={file}
+            role={role}
             onUpload={(f) => dispatch({ type: 'UPLOAD_FILE', file: f })}
             onCancel={() => dispatch({ type: 'CANCEL_UPLOAD' })}
+            onDemoSelect={(scenario: DemoScenario) => dispatch({ type: 'SELECT_DEMO', scenario })}
           />
         );
       case AppStep.EXTRACTION:

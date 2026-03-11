@@ -1,15 +1,20 @@
 import { useEffect, useState } from 'react';
-import { Upload, ShieldCheck, Clock, X } from 'lucide-react';
+import { Upload, ShieldCheck, Clock, X, ClipboardList } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { config } from '../config';
+import type { UserRole } from '../types';
+import { DEMO_SCENARIOS } from '../data/demoScenarios';
+import type { DemoScenario } from '../data/demoScenarios';
 
 interface StepUploadProps {
   file: File | null;
+  role: UserRole;
   onUpload: (file: File) => void;
   onCancel: () => void;
+  onDemoSelect: (scenario: DemoScenario) => void;
 }
 
-export function StepUpload({ file, onUpload, onCancel }: StepUploadProps) {
+export function StepUpload({ file, role, onUpload, onCancel, onDemoSelect }: StepUploadProps) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
 
@@ -132,6 +137,46 @@ export function StepUpload({ file, onUpload, onCancel }: StepUploadProps) {
               <span>처리 후 즉시 삭제</span>
             </div>
           </div>
+        </div>
+      </div>
+
+      <div className="mt-8">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="grow h-px bg-slate-200" />
+          <span className="text-sm text-slate-400 font-medium">또는</span>
+          <div className="grow h-px bg-slate-200" />
+        </div>
+
+        <div className="text-center mb-4">
+          <h3 className="text-sm font-bold text-slate-700 flex items-center justify-center gap-1.5">
+            <ClipboardList className="w-4 h-4 text-blue-500" />
+            세금계산서 없이 체험하기
+          </h3>
+          <p className="text-xs text-slate-400 mt-1">
+            샘플 데이터로 전체 플로우를 체험할 수 있습니다
+          </p>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          {DEMO_SCENARIOS.filter((s) => s.role === role).map((scenario) => (
+            <button
+              key={scenario.id}
+              type="button"
+              onClick={() => onDemoSelect(scenario)}
+              className="p-4 border-2 border-slate-200 rounded-xl hover:border-blue-400 hover:shadow-md transition-all text-left bg-white group"
+            >
+              <h4 className="text-sm font-bold text-slate-800 group-hover:text-blue-700">
+                {scenario.name}
+              </h4>
+              <p className="text-xs text-slate-500 mt-1 leading-relaxed">{scenario.description}</p>
+              <div className="mt-3 flex items-center justify-between">
+                <span className="text-[10px] bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full font-medium">
+                  {scenario.taxIssue}
+                </span>
+                <span className="text-[10px] text-slate-400">{scenario.lawReference}</span>
+              </div>
+            </button>
+          ))}
         </div>
       </div>
     </div>
