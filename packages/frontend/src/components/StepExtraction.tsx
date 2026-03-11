@@ -5,6 +5,7 @@ import {
   AlertCircle,
   ArrowRight,
   FileText,
+  Info,
   PenLine,
   RefreshCw,
   ScanText,
@@ -17,6 +18,7 @@ import toast from 'react-hot-toast';
 interface Props {
   file: File | null;
   initialData: InvoiceData | null;
+  isDemo: boolean;
   onConfirm: (data: InvoiceData) => void;
   onCancel: () => void;
 }
@@ -124,7 +126,7 @@ const callOCRApi = async (file: File, signal?: AbortSignal): Promise<OcrResult> 
   return response.json();
 };
 
-export const StepExtraction = ({ file, initialData, onConfirm, onCancel }: Props) => {
+export const StepExtraction = ({ file, initialData, isDemo, onConfirm, onCancel }: Props) => {
   const [loading, setLoading] = useState<boolean>(!initialData);
   const [extractionFailed, setExtractionFailed] = useState<boolean>(false);
   const [fieldConfidence, setFieldConfidence] = useState<FieldConfidence | null>(null);
@@ -288,34 +290,44 @@ export const StepExtraction = ({ file, initialData, onConfirm, onCancel }: Props
   }
 
   return (
-    <div className="flex flex-col lg:flex-row gap-6 h-full animate-fade-in">
-      <div className="w-full lg:w-1/2 flex flex-col">
-        <div className="flex items-center mb-3">
-          <FileText className="w-4 h-4 mr-2 text-slate-500" />
-          <h3 className="text-sm font-semibold text-slate-700">원본 이미지</h3>
+    <div className={`flex flex-col ${isDemo ? '' : 'lg:flex-row'} gap-6 h-full animate-fade-in`}>
+      {!isDemo && (
+        <div className="w-full lg:w-1/2 flex flex-col">
+          <div className="flex items-center mb-3">
+            <FileText className="w-4 h-4 mr-2 text-slate-500" />
+            <h3 className="text-sm font-semibold text-slate-700">원본 이미지</h3>
+          </div>
+          <div className="grow bg-slate-100 rounded-lg overflow-hidden border border-slate-200 relative min-h-[400px] flex items-center justify-center group">
+            {previewUrl ? (
+              <img
+                src={previewUrl}
+                alt="Preview"
+                className="max-w-full max-h-[600px] object-contain shadow-sm transition-transform duration-300 group-hover:scale-[1.02]"
+              />
+            ) : (
+              <div className="text-sm text-slate-400">이미지 미리보기 없음</div>
+            )}
+          </div>
         </div>
-        <div className="grow bg-slate-100 rounded-lg overflow-hidden border border-slate-200 relative min-h-[400px] flex items-center justify-center group">
-          {previewUrl ? (
-            <img
-              src={previewUrl}
-              alt="Preview"
-              className="max-w-full max-h-[600px] object-contain shadow-sm transition-transform duration-300 group-hover:scale-[1.02]"
-            />
-          ) : (
-            <div className="text-sm text-slate-400">이미지 미리보기 없음</div>
-          )}
-        </div>
-      </div>
+      )}
 
-      <div className="w-full lg:w-1/2 flex flex-col">
+      <div className={`w-full ${isDemo ? 'max-w-2xl mx-auto' : 'lg:w-1/2'} flex flex-col`}>
         {loading ? (
           <SkeletonForm onManualInput={switchToManualEntry} />
         ) : (
           <>
+            {isDemo && (
+              <div className="flex items-start gap-3 p-4 bg-blue-50 border border-blue-200 rounded-lg mb-4">
+                <Info className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
+                <p className="text-sm text-blue-800">
+                  샘플 데이터로 체험 중입니다. 데이터를 수정하면 AI 조언이 달라집니다.
+                </p>
+              </div>
+            )}
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-bold text-slate-800 flex items-center">
                 <ScanText className="w-5 h-5 mr-2 text-blue-600" />
-                OCR 데이터 확인
+                {isDemo ? '데모 데이터 확인' : 'OCR 데이터 확인'}
               </h3>
             </div>
 
