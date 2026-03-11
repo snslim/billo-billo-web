@@ -42,6 +42,7 @@ function App() {
           <StepValidation
             data={invoiceData}
             role={role}
+            isDemo={isDemo}
             onProceed={(report, answers) =>
               dispatch({ type: 'PROCEED_TO_ADVISORY', report, answers })
             }
