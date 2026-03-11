@@ -173,7 +173,30 @@ export const StepAdvisory = ({ data, role, validationReport, userAnswers, onRese
                 </div>
               </div>
             ) : (
-              <div className="text-center py-10 text-slate-500">데이터를 불러올 수 없습니다.</div>
+              <div className="text-center py-12 animate-fade-in">
+                <div className="inline-flex items-center justify-center p-3 bg-red-50 rounded-full mb-4">
+                  <AlertTriangle className="w-6 h-6 text-red-500" />
+                </div>
+                <h4 className="text-sm font-bold text-slate-800 mb-1">
+                  AI 조언을 생성하지 못했습니다
+                </h4>
+                <p className="text-xs text-slate-500 mb-6">일시적 오류입니다. 다시 시도해주세요.</p>
+                <div className="flex justify-center gap-3">
+                  <button
+                    onClick={handleRegenerateAdvice}
+                    className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+                  >
+                    <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
+                    다시 시도
+                  </button>
+                  <button
+                    onClick={onReset}
+                    className="flex items-center px-4 py-2 border border-slate-300 rounded-lg text-sm text-slate-600 hover:bg-slate-50 transition-colors"
+                  >
+                    처음부터 다시 시작
+                  </button>
+                </div>
+              </div>
             )}
           </div>
 
