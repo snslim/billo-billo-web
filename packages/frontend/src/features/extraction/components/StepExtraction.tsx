@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import type { InvoiceData, DocType, OcrResult, FieldConfidence, ConfidenceLevel } from '../types';
-import { config } from '../config';
+import type { InvoiceData, DocType, OcrResult, FieldConfidence, ConfidenceLevel } from '../../../types';
+import { config } from '../../../config';
 import {
   AlertCircle,
   ArrowRight,
@@ -12,7 +12,7 @@ import {
   Ban,
   BookOpenCheck,
 } from 'lucide-react';
-import { formatCurrency, parseCurrency, cn } from '../utils/formatting';
+import { formatCurrency, parseCurrency, cn } from '../../../utils/formatting';
 import toast from 'react-hot-toast';
 
 interface Props {

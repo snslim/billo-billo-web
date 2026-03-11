@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { DEMO_SCENARIOS } from './demoScenarios';
-import type { InvoiceData } from '../types';
+import type { InvoiceData } from '../../../types';
 
 const isValidRegNo = (num: string): boolean => {
   const cleaned = num.replace(/[^0-9]/g, '');

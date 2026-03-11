@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Upload, ShieldCheck, Clock, X, ClipboardList } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { config } from '../config';
-import type { UserRole } from '../types';
+import { config } from '../../../config';
+import type { UserRole } from '../../../types';
 import { DEMO_SCENARIOS } from '../data/demoScenarios';
 import type { DemoScenario } from '../data/demoScenarios';
 

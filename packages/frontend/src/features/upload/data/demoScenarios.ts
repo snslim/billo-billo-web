@@ -1,4 +1,4 @@
-import type { InvoiceData, UserRole, UserChecklistAnswers } from '../types';
+import type { InvoiceData, UserRole, UserChecklistAnswers } from '../../../types';
 
 export interface DemoScenario {
   id: string;
