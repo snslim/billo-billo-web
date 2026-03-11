@@ -46,6 +46,7 @@ const validateTaxMath = (supply: number, tax: number): ValidationResult => {
   const expectedTax = Math.floor(supply * 0.1);
   const diff = Math.abs(expectedTax - tax);
 
+  // 부가세 계산 시 원 단위 절사(Math.floor)로 인한 ±10원 오차 허용
   if (diff <= 10) {
     return { isValid: true, message: '세액 계산 일치', type: 'success' };
   }
@@ -111,11 +112,11 @@ const fetchBusinessStatusBulk = async (regNos: string[]): Promise<Map<string, Bu
       });
     }
   } catch (e: unknown) {
-    const error = e as Error;
-    if (error.name === 'AbortError') {
+    const message = e instanceof Error ? e.message : 'Unknown error';
+    if (e instanceof Error && e.name === 'AbortError') {
       console.error('Business Status Check Timed Out');
     } else {
-      console.error('Business Status Fetch Failed:', error.message);
+      console.error('Business Status Fetch Failed:', message);
     }
   } finally {
     clearTimeout(timeoutId);

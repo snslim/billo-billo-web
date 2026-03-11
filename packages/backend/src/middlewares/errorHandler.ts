@@ -19,6 +19,6 @@ export function errorHandler(err: Error, _req: Request, res: Response, _next: Ne
     return;
   }
 
-  logger.error({ err }, '서버 오류');
+  logger.error({ err }, 'Unhandled server error');
   res.status(500).json({ error: err.message });
 }

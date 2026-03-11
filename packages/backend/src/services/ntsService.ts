@@ -14,7 +14,7 @@ export async function validateBusiness(businessNumbers: string[]): Promise<NtsVa
   );
 
   if (!response.ok) {
-    logger.error({ status: response.status }, '국세청 API 오류');
+    logger.error({ status: response.status }, 'NTS API error');
     throw new Error('국세청 조회 실패');
   }
 

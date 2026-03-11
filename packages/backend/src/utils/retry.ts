@@ -40,10 +40,13 @@ export async function fetchWithRetry(
       }
 
       lastResponse = response;
-      logger.warn({ attempt, maxAttempts, status: response.status }, '외부 API 재시도 예정');
+      logger.warn(
+        { attempt, maxAttempts, status: response.status },
+        'External API retry scheduled'
+      );
     } catch (error) {
       lastError = error instanceof Error ? error : new Error(String(error));
-      logger.warn({ attempt, maxAttempts, err: lastError }, '외부 API 요청 실패');
+      logger.warn({ attempt, maxAttempts, err: lastError }, 'External API request failed');
     }
 
     if (attempt < maxAttempts) {
@@ -53,5 +56,5 @@ export async function fetchWithRetry(
   }
 
   if (lastResponse) return lastResponse;
-  throw lastError ?? new Error('fetchWithRetry 실패');
+  throw lastError ?? new Error('fetchWithRetry exhausted');
 }
