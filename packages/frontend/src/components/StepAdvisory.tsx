@@ -108,13 +108,34 @@ export const StepAdvisory = ({ data, role, validationReport, userAnswers, onRese
 
           <div className="grow p-6 overflow-y-auto bg-white">
             {loading ? (
-              <div className="space-y-6 animate-pulse p-2">
-                <div className="h-6 bg-slate-200 rounded w-3/4 mb-8"></div>
-                <div className="space-y-4">
-                  {[1, 2, 3].map((i) => (
-                    <div key={i} className="flex items-start space-x-3">
-                      <div className="w-5 h-5 bg-slate-200 rounded shrink-0"></div>
-                      <div className="h-4 bg-slate-100 rounded w-full"></div>
+              <div className="space-y-8 animate-pulse p-2">
+                <div className="h-3 bg-slate-100 rounded w-2/3"></div>
+                <div className="bg-blue-50/60 border border-blue-100 p-4 rounded-lg space-y-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 bg-blue-200 rounded shrink-0"></div>
+                    <div className="h-4 bg-blue-200 rounded w-20"></div>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="h-3 bg-blue-100 rounded w-full"></div>
+                    <div className="h-3 bg-blue-100 rounded w-5/6"></div>
+                    <div className="h-3 bg-blue-100 rounded w-4/6"></div>
+                  </div>
+                </div>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="w-5 h-5 bg-slate-200 rounded shrink-0"></div>
+                    <div className="h-5 bg-slate-200 rounded w-32"></div>
+                  </div>
+                  {[1, 2, 3, 4].map((i) => (
+                    <div
+                      key={i}
+                      className="flex items-start p-4 rounded-lg border border-slate-100 bg-slate-50/50"
+                    >
+                      <div className="w-1.5 h-1.5 bg-slate-300 rounded-full mr-3 mt-2 shrink-0"></div>
+                      <div className="space-y-2 w-full">
+                        <div className="h-3 bg-slate-200 rounded w-full"></div>
+                        <div className="h-3 bg-slate-100 rounded w-3/4"></div>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -142,35 +163,37 @@ export const StepAdvisory = ({ data, role, validationReport, userAnswers, onRese
                   <p className="text-slate-700 text-sm leading-relaxed">{advisory.summary}</p>
                 </div>
 
-                <div>
-                  <h4 className="text-base font-bold text-slate-800 mb-4 flex items-center">
-                    {role === 'receiver' ? (
-                      <CheckSquare className="w-5 h-5 mr-2 text-emerald-600" />
-                    ) : (
-                      <AlertTriangle className="w-5 h-5 mr-2 text-amber-600" />
-                    )}
-                    {role === 'receiver' ? '공제 요건 확인' : '신고 주의사항'}
-                  </h4>
-                  <div className="space-y-3">
-                    {(role === 'receiver' ? advisory.checklists : advisory.warnings).map(
-                      (item, idx) => (
-                        <div
-                          key={idx}
-                          className={`flex items-start p-4 rounded-lg border ${role === 'receiver' ? 'bg-white border-slate-200' : 'bg-amber-50 border-amber-100'}`}
-                        >
+                {(role === 'receiver' ? advisory.checklists : advisory.warnings).length > 0 && (
+                  <div>
+                    <h4 className="text-base font-bold text-slate-800 mb-4 flex items-center">
+                      {role === 'receiver' ? (
+                        <CheckSquare className="w-5 h-5 mr-2 text-emerald-600" />
+                      ) : (
+                        <AlertTriangle className="w-5 h-5 mr-2 text-amber-600" />
+                      )}
+                      {role === 'receiver' ? '공제 요건 확인' : '신고 주의사항'}
+                    </h4>
+                    <div className="space-y-3">
+                      {(role === 'receiver' ? advisory.checklists : advisory.warnings).map(
+                        (item, idx) => (
                           <div
-                            className={`w-1.5 h-1.5 rounded-full mr-3 mt-2 shrink-0 ${role === 'receiver' ? 'bg-emerald-500' : 'bg-amber-500'}`}
-                          ></div>
-                          <span
-                            className={`text-sm ${role === 'receiver' ? 'text-slate-700' : 'text-amber-900'}`}
+                            key={idx}
+                            className={`flex items-start p-4 rounded-lg border ${role === 'receiver' ? 'bg-white border-slate-200' : 'bg-amber-50 border-amber-100'}`}
                           >
-                            {item}
-                          </span>
-                        </div>
-                      )
-                    )}
+                            <div
+                              className={`w-1.5 h-1.5 rounded-full mr-3 mt-2 shrink-0 ${role === 'receiver' ? 'bg-emerald-500' : 'bg-amber-500'}`}
+                            ></div>
+                            <span
+                              className={`text-sm ${role === 'receiver' ? 'text-slate-700' : 'text-amber-900'}`}
+                            >
+                              {item}
+                            </span>
+                          </div>
+                        )
+                      )}
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             ) : (
               <div className="text-center py-12 animate-fade-in">
@@ -222,7 +245,23 @@ export const StepAdvisory = ({ data, role, validationReport, userAnswers, onRese
             </div>
           </div>
           <div className="grow overflow-y-auto p-4 space-y-4 bg-slate-50/50">
-            {references.length > 0 ? (
+            {loading ? (
+              <div className="space-y-4 animate-pulse">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="bg-white p-4 rounded-lg border border-slate-200">
+                    <div className="flex items-center gap-1.5 mb-3">
+                      <div className="w-4 h-4 bg-blue-100 rounded shrink-0"></div>
+                      <div className="h-3 bg-blue-100 rounded w-32"></div>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="h-3 bg-slate-100 rounded w-full"></div>
+                      <div className="h-3 bg-slate-100 rounded w-5/6"></div>
+                      <div className="h-3 bg-slate-100 rounded w-3/4"></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : references.length > 0 ? (
               references.map((ref) => (
                 <div
                   key={ref.id}
