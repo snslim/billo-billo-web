@@ -1,6 +1,6 @@
 import { AppStep } from '../types';
 import type { UserRole, InvoiceData, ValidationReport, UserChecklistAnswers } from '../types';
-import type { DemoScenario } from '../features/upload/data/demoScenarios';
+import type { DemoScenario } from '../features/upload';
 
 export interface AppState {
   currentStep: AppStep;
