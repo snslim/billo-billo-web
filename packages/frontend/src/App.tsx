@@ -11,7 +11,7 @@ import type { DemoScenario } from './data/demoScenarios';
 
 function App() {
   const { state, dispatch } = useInvoice();
-  const { currentStep, role, file, invoiceData, validationReport, userAnswers } = state;
+  const { currentStep, role, file, invoiceData, validationReport, userAnswers, isDemo } = state;
 
   const renderStep = () => {
     switch (currentStep) {
@@ -32,6 +32,7 @@ function App() {
           <StepExtraction
             file={file}
             initialData={invoiceData}
+            isDemo={isDemo}
             onConfirm={(data) => dispatch({ type: 'CONFIRM_EXTRACTION', data })}
             onCancel={() => dispatch({ type: 'CANCEL_EXTRACTION' })}
           />
