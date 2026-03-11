@@ -23,6 +23,7 @@ describe('StepExtraction', () => {
       <StepExtraction
         file={mockFile}
         initialData={mockData}
+        isDemo={false}
         onConfirm={mockOnConfirm}
         onCancel={mockOnCancel}
       />
@@ -36,6 +37,7 @@ describe('StepExtraction', () => {
       <StepExtraction
         file={mockFile}
         initialData={mockData}
+        isDemo={false}
         onConfirm={mockOnConfirm}
         onCancel={mockOnCancel}
       />
@@ -49,6 +51,7 @@ describe('StepExtraction', () => {
       <StepExtraction
         file={mockFile}
         initialData={mockData}
+        isDemo={false}
         onConfirm={mockOnConfirm}
         onCancel={mockOnCancel}
       />

@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { invoiceReducer, initialState } from './invoiceReducer';
 import { AppStep } from '../types';
 import type { InvoiceData, ValidationReport, ReceiverChecklistAnswers } from '../types';
+import { DEMO_SCENARIOS } from '../data/demoScenarios';
 
 const mockInvoiceData: InvoiceData = {
   docType: 'general',
@@ -122,5 +123,45 @@ describe('invoiceReducer', () => {
     const next = invoiceReducer(initialState, { type: 'GO_BACK' });
 
     expect(next.currentStep).toBe(AppStep.ROLE_SELECTION);
+  });
+
+  describe('SELECT_DEMO', () => {
+    const demoScenario = DEMO_SCENARIOS[0];
+
+    it('isDemo를 true로 설정하고 시나리오를 저장한다', () => {
+      const state = { ...initialState, currentStep: AppStep.UPLOAD, role: 'receiver' as const };
+      const next = invoiceReducer(state, { type: 'SELECT_DEMO', scenario: demoScenario });
+
+      expect(next.isDemo).toBe(true);
+      expect(next.demoScenario).toBe(demoScenario);
+    });
+
+    it('시나리오의 invoiceData를 상태에 복사한다', () => {
+      const state = { ...initialState, currentStep: AppStep.UPLOAD, role: 'receiver' as const };
+      const next = invoiceReducer(state, { type: 'SELECT_DEMO', scenario: demoScenario });
+
+      expect(next.invoiceData).toEqual(demoScenario.invoiceData);
+    });
+
+    it('EXTRACTION 단계로 이동한다', () => {
+      const state = { ...initialState, currentStep: AppStep.UPLOAD, role: 'receiver' as const };
+      const next = invoiceReducer(state, { type: 'SELECT_DEMO', scenario: demoScenario });
+
+      expect(next.currentStep).toBe(AppStep.EXTRACTION);
+    });
+
+    it('RESET하면 데모 상태도 초기화된다', () => {
+      const state = {
+        ...initialState,
+        isDemo: true,
+        demoScenario,
+        invoiceData: demoScenario.invoiceData,
+        currentStep: AppStep.ADVISORY,
+      };
+      const next = invoiceReducer(state, { type: 'RESET' });
+
+      expect(next.isDemo).toBe(false);
+      expect(next.demoScenario).toBeNull();
+    });
   });
 });
