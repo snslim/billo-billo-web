@@ -1,6 +1,20 @@
 import fetch, { type RequestInfo, type RequestInit, type Response } from 'node-fetch';
 import { logger } from './logger.js';
 
+const SENSITIVE_PARAMS = ['key', 'serviceKey', 'api_key'];
+
+function sanitizeUrl(url: string): string {
+  try {
+    const parsed = new URL(url);
+    for (const param of SENSITIVE_PARAMS) {
+      if (parsed.searchParams.has(param)) parsed.searchParams.set(param, '***');
+    }
+    return parsed.toString();
+  } catch {
+    return url;
+  }
+}
+
 interface RetryOptions {
   maxAttempts?: number;
   baseDelayMs?: number;
@@ -41,12 +55,15 @@ export async function fetchWithRetry(
 
       lastResponse = response;
       logger.warn(
-        { attempt, maxAttempts, status: response.status },
+        { attempt, maxAttempts, status: response.status, url: sanitizeUrl(String(url)) },
         'External API retry scheduled'
       );
     } catch (error) {
       lastError = error instanceof Error ? error : new Error(String(error));
-      logger.warn({ attempt, maxAttempts, err: lastError }, 'External API request failed');
+      logger.warn(
+        { attempt, maxAttempts, err: lastError, url: sanitizeUrl(String(url)) },
+        'External API request failed'
+      );
     }
 
     if (attempt < maxAttempts) {
