@@ -1,5 +1,6 @@
 import { AppStep } from '../types';
 import type { UserRole, InvoiceData, ValidationReport, UserChecklistAnswers } from '../types';
+import type { DemoScenario } from '../data/demoScenarios';
 
 export interface AppState {
   currentStep: AppStep;
@@ -8,6 +9,8 @@ export interface AppState {
   invoiceData: InvoiceData | null;
   validationReport: ValidationReport | null;
   userAnswers: UserChecklistAnswers | null;
+  isDemo: boolean;
+  demoScenario: DemoScenario | null;
 }
 
 export type AppAction =
@@ -18,7 +21,8 @@ export type AppAction =
   | { type: 'CANCEL_EXTRACTION' }
   | { type: 'PROCEED_TO_ADVISORY'; report: ValidationReport; answers: UserChecklistAnswers }
   | { type: 'RESET' }
-  | { type: 'GO_BACK' };
+  | { type: 'GO_BACK' }
+  | { type: 'SELECT_DEMO'; scenario: DemoScenario };
 
 const PREV_STEP: Record<AppStep, AppStep> = {
   [AppStep.ROLE_SELECTION]: AppStep.ROLE_SELECTION,
@@ -35,6 +39,8 @@ export const initialState: AppState = {
   invoiceData: null,
   validationReport: null,
   userAnswers: null,
+  isDemo: false,
+  demoScenario: null,
 };
 
 export function invoiceReducer(state: AppState, action: AppAction): AppState {
@@ -55,6 +61,14 @@ export function invoiceReducer(state: AppState, action: AppAction): AppState {
         validationReport: action.report,
         userAnswers: action.answers,
         currentStep: AppStep.ADVISORY,
+      };
+    case 'SELECT_DEMO':
+      return {
+        ...state,
+        isDemo: true,
+        demoScenario: action.scenario,
+        invoiceData: action.scenario.invoiceData,
+        currentStep: AppStep.EXTRACTION,
       };
     case 'RESET':
       return initialState;
