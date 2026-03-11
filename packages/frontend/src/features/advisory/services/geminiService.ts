@@ -1,9 +1,9 @@
-import type { InvoiceData, UserRole, AIAdvisoryResponse, UserChecklistAnswers } from '../types';
-import { isSupplierAnswers } from '../types';
+import type { InvoiceData, UserRole, AIAdvisoryResponse, UserChecklistAnswers } from '../../../types';
+import { isSupplierAnswers } from '../../../types';
 import { retrieveRelevantLaws } from '../data/legalKnowledge';
 import type { LegalReference } from '../data/legalKnowledge';
-import { anonymizeInvoiceData } from '../utils/formatting';
-import { config } from '../config';
+import { anonymizeInvoiceData } from '../../../utils/formatting';
+import { config } from '../../../config';
 import toast from 'react-hot-toast';
 
 const MOCK_ADVISORY_RESPONSE: AIAdvisoryResponse = {

@@ -4,7 +4,7 @@ import { StepRole } from './components/StepRole';
 import { StepUpload } from './components/StepUpload';
 import { StepExtraction } from './components/StepExtraction';
 import { StepValidation } from './features/validation';
-import { StepAdvisory } from './components/StepAdvisory';
+import { StepAdvisory } from './features/advisory';
 import { AppStep } from './types';
 import { useInvoice } from './store/InvoiceProvider';
 import type { DemoScenario } from './data/demoScenarios';

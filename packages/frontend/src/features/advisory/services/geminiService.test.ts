@@ -1,8 +1,8 @@
 import { describe, it, expect, vi } from 'vitest';
 import { getRAGSystemPrompt } from './geminiService';
-import type { ReceiverChecklistAnswers, SupplierChecklistAnswers } from '../types';
+import type { ReceiverChecklistAnswers, SupplierChecklistAnswers } from '../../../types';
 
-vi.mock('../config', () => ({
+vi.mock('../../../config', () => ({
   config: { api: { baseUrl: 'http://localhost:3000', timeout: 10000 } },
 }));
 
