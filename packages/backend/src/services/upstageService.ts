@@ -24,7 +24,7 @@ export async function callOcr(
 
   if (!response.ok) {
     const errorBody = await response.text();
-    logger.error({ status: response.status, body: errorBody }, 'UPSTAGE API 오류');
+    logger.error({ status: response.status, body: errorBody }, 'Upstage OCR API error');
     throw new Error('OCR 처리 실패');
   }
 

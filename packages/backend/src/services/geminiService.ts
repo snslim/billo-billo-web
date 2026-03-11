@@ -20,7 +20,7 @@ export async function getEmbeddings(texts: string[]): Promise<number[][]> {
 
   if (!response.ok) {
     const errorBody = await response.text();
-    logger.error({ body: errorBody }, 'Gemini Embedding API 오류');
+    logger.error({ body: errorBody }, 'Gemini Embedding API error');
     throw new Error('Embedding 처리 실패');
   }
 
@@ -50,7 +50,7 @@ export async function generateAdvisory(
 
   if (!response.ok) {
     const errorBody = await response.text();
-    logger.error({ body: errorBody }, 'Gemini API 오류');
+    logger.error({ body: errorBody }, 'Gemini API error');
     throw new Error('AI 조언 생성 실패');
   }
 

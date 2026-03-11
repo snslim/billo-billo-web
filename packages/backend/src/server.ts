@@ -18,7 +18,7 @@ const { logger } = await import('./utils/logger.js');
 const PORT = Number(process.env.PORT) || 3000;
 
 const server = app.listen(PORT, () => {
-  logger.info({ port: PORT }, '서버 실행 중');
+  logger.info({ port: PORT }, 'Server running');
 });
 
 export { app, server };
