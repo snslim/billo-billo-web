@@ -207,7 +207,7 @@ export const StepValidation = ({ data, role, isDemo, suggestedAnswers, onProceed
 
   if (!report) {
     return (
-      <div className="w-full max-w-2xl mx-auto text-center py-20 animate-pulse">
+      <div className="w-full text-center py-20 animate-pulse">
         <Loader2 className="w-8 h-8 text-blue-600 animate-spin mx-auto mb-4" />
         <h3 className="text-sm font-medium text-slate-600">국세청 데이터 조회 중...</h3>
       </div>
@@ -226,7 +226,7 @@ export const StepValidation = ({ data, role, isDemo, suggestedAnswers, onProceed
     role === 'supplier' ? SUPPLIER_CHECKLIST : RECEIVER_CHECKLIST;
 
   return (
-    <div className="w-full max-w-2xl mx-auto animate-fade-in pb-10">
+    <div className="w-full animate-fade-in pb-10">
       {/* 페이지 헤더 */}
       <div className="text-center mb-6">
         <h2 className="text-xl font-bold text-slate-900 flex items-center justify-center">

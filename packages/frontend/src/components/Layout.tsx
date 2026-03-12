@@ -29,7 +29,7 @@ export function Layout({ children }: LayoutProps) {
           </div>
         </header>
 
-        <main className="max-w-4xl mx-auto px-4 py-8 grow">{children}</main>
+        <main className="w-full max-w-4xl mx-auto px-4 py-8 grow">{children}</main>
 
         <footer className="border-t border-slate-200 bg-white mt-auto">
           <div className="max-w-4xl mx-auto px-4 py-4">
