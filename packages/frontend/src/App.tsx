@@ -102,7 +102,7 @@ function App() {
       </div>
       {currentStep === AppStep.ADVISORY && (
         <>
-          {demoBanner}
+          <div className="w-full max-w-6xl mx-auto">{demoBanner}</div>
           {renderStep()}
         </>
       )}
