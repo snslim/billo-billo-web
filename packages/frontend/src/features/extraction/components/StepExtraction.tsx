@@ -1,5 +1,11 @@
 import { useState, useEffect } from 'react';
-import type { InvoiceData, DocType, OcrResult, FieldConfidence, ConfidenceLevel } from '../../../types';
+import type {
+  InvoiceData,
+  DocType,
+  OcrResult,
+  FieldConfidence,
+  ConfidenceLevel,
+} from '../../../types';
 import { config } from '../../../config';
 import {
   AlertCircle,
@@ -231,7 +237,7 @@ export const StepExtraction = ({ file, initialData, isDemo, onConfirm, onCancel 
     const info = docInfo[data.docType as UnsupportedDocType];
 
     return (
-      <div className="w-full max-w-2xl mx-auto text-center py-16 px-4 animate-fade-in">
+      <div className="w-full text-center py-16 px-4 animate-fade-in">
         <div className="inline-flex items-center justify-center p-4 bg-amber-50 rounded-full mb-6 ring-4 ring-amber-50">
           <Ban className="w-10 h-10 text-amber-600" />
         </div>
@@ -265,7 +271,7 @@ export const StepExtraction = ({ file, initialData, isDemo, onConfirm, onCancel 
 
   if (extractionFailed) {
     return (
-      <div className="w-full max-w-2xl mx-auto text-center py-16 px-4">
+      <div className="w-full text-center py-16 px-4">
         <div className="inline-flex items-center justify-center p-4 bg-red-50 rounded-full mb-6 ring-4 ring-red-50">
           <AlertCircle className="w-8 h-8 text-red-600" />
         </div>
@@ -311,7 +317,7 @@ export const StepExtraction = ({ file, initialData, isDemo, onConfirm, onCancel 
         </div>
       )}
 
-      <div className={`w-full ${isDemo ? 'max-w-2xl mx-auto' : 'lg:w-1/2'} flex flex-col`}>
+      <div className={`w-full ${isDemo ? '' : 'lg:w-1/2'} flex flex-col`}>
         {loading ? (
           <SkeletonForm onManualInput={switchToManualEntry} />
         ) : (

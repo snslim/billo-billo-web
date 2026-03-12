@@ -6,7 +6,7 @@ interface StepRoleProps {
 
 export function StepRole({ onSelect }: StepRoleProps) {
   return (
-    <div className="w-full max-w-2xl mx-auto">
+    <div className="w-full">
       <h2 className="text-2xl font-bold text-slate-800 mb-2 text-center">
         어떤 입장에서 검토하시나요?
       </h2>

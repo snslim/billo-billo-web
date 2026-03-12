@@ -69,7 +69,7 @@ export function StepUpload({ file, role, onUpload, onCancel, onDemoSelect }: Ste
   };
 
   return (
-    <div className="w-full max-w-2xl mx-auto">
+    <div className="w-full">
       <div className="text-center mb-8">
         <h2 className="text-2xl font-bold text-slate-800 mb-2">세금계산서 파일 업로드</h2>
         <p className="text-slate-500">PDF 또는 이미지(JPG, PNG) 파일을 업로드해주세요.</p>

@@ -73,29 +73,39 @@ function App() {
     }
   };
 
+  const demoBanner = isDemo && currentStep > AppStep.UPLOAD && (
+    <div className="mb-4 flex items-center gap-2 px-3 py-2 bg-blue-50 border border-blue-200 rounded-lg text-xs text-blue-700">
+      <span className="font-semibold bg-blue-600 text-white px-1.5 py-0.5 rounded text-[10px]">
+        DEMO
+      </span>
+      <span>
+        샘플 데이터로 체험 중 — {demoScenario?.name}
+        {demoScenario?.taxIssue && ` (${demoScenario.taxIssue})`}
+      </span>
+    </div>
+  );
+
   return (
     <Layout>
-      <StepIndicator currentStep={currentStep} />
-      {isDemo && currentStep > AppStep.UPLOAD && (
-        <div className="mb-4 flex items-center gap-2 px-3 py-2 bg-blue-50 border border-blue-200 rounded-lg text-xs text-blue-700">
-          <span className="font-semibold bg-blue-600 text-white px-1.5 py-0.5 rounded text-[10px]">
-            DEMO
-          </span>
-          <span>
-            샘플 데이터로 체험 중 — {demoScenario?.name}
-            {demoScenario?.taxIssue && ` (${demoScenario.taxIssue})`}
-          </span>
-        </div>
+      <div className="w-full max-w-3xl mx-auto">
+        <StepIndicator currentStep={currentStep} />
+        {currentStep !== AppStep.ADVISORY && demoBanner}
+        {currentStep > AppStep.ROLE_SELECTION && currentStep < AppStep.ADVISORY && (
+          <button
+            onClick={() => dispatch({ type: 'GO_BACK' })}
+            className="mb-4 flex items-center gap-1 text-sm text-slate-500 hover:text-slate-800 transition-colors"
+          >
+            ← 이전 단계
+          </button>
+        )}
+        {currentStep !== AppStep.ADVISORY && renderStep()}
+      </div>
+      {currentStep === AppStep.ADVISORY && (
+        <>
+          {demoBanner}
+          {renderStep()}
+        </>
       )}
-      {currentStep > AppStep.ROLE_SELECTION && currentStep < AppStep.ADVISORY && (
-        <button
-          onClick={() => dispatch({ type: 'GO_BACK' })}
-          className="mb-4 flex items-center gap-1 text-sm text-slate-500 hover:text-slate-800 transition-colors"
-        >
-          ← 이전 단계
-        </button>
-      )}
-      {renderStep()}
     </Layout>
   );
 }
