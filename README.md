@@ -125,7 +125,7 @@ Frontend는 컴포넌트 단위 테스트(Vitest + Testing Library), Backend는 
 
 ### 1. 역할 선택
 
-<img width="1280" height="800" alt="Image" src="https://github.com/user-attachments/assets/6abfa1bf-42f9-4acd-a4d5-8fbeac0045e1" />
+<img width="1000" height="831" alt="Image" src="https://github.com/user-attachments/assets/9377d7fb-18b5-4cfc-9c8b-9faabcef10e9" />
 
 공급자(매출) 또는 공급받는자(매입)를 선택합니다. 역할에 따라 체크리스트, 법률 검색 가중치, AI 조언이 달라집니다.
 
@@ -133,7 +133,7 @@ Frontend는 컴포넌트 단위 테스트(Vitest + Testing Library), Backend는 
 
 ### 2. 세금계산서 업로드
 
-<img width="1280" height="800" alt="Image" src="https://github.com/user-attachments/assets/7db37c6c-46c8-469c-a73f-af7935c02178" />
+<img width="1000" height="833" alt="Image" src="https://github.com/user-attachments/assets/0adfaa12-4af8-4a16-9425-45fa4691c300" />
 
 이미지(JPG, PNG) 또는 PDF를 업로드합니다. API 키 없이도 전체 플로우를 체험할 수 있도록 **데모 모드**(4개 시나리오)를 제공합니다.
 
@@ -141,7 +141,7 @@ Frontend는 컴포넌트 단위 테스트(Vitest + Testing Library), Backend는 
 
 ### 3. 정보 추출 및 확인
 
-<img width="1280" height="800" alt="Image" src="https://github.com/user-attachments/assets/ba494c4e-2784-467e-b66f-4af7fef5f337" />
+<img width="999" height="829" alt="Image" src="https://github.com/user-attachments/assets/e402366c-1df5-4d96-ad5c-b77ea16a9e7b" />
 
 OCR로 6개 필드를 자동 추출하고, 필드별 신뢰도(high/medium/low/missing)를 표시합니다. OCR 결과를 그대로 신뢰하지 않고, 불확실성을 사용자에게 투명하게 전달합니다. OCR 실패 시 직접 입력으로 전환됩니다.
 
@@ -149,7 +149,7 @@ OCR로 6개 필드를 자동 추출하고, 필드별 신뢰도(high/medium/low/m
 
 ### 4. 검증 및 체크리스트
 
-<img width="1280" height="800" alt="Image" src="https://github.com/user-attachments/assets/d41ab0d1-aaf2-4990-b9bd-1f4f72bea691" />
+<img width="1001" height="830" alt="Image" src="https://github.com/user-attachments/assets/f555b72c-4411-4332-a146-2ef99be5d894" />
 
 국세청 API로 상대방 휴·폐업 여부를 조회하고, 역할별 체크리스트(공급자 6항목, 매입자 3항목)를 제공합니다. 응답은 AI 조언에 반영됩니다.
 
@@ -157,7 +157,7 @@ OCR로 6개 필드를 자동 추출하고, 필드별 신뢰도(high/medium/low/m
 
 ### 5. AI 세무 자문
 
-<img width="1280" height="800" alt="Image" src="https://github.com/user-attachments/assets/c4390cc1-2950-44a1-a555-87b29604755a" />
+<img width="1000" height="827" alt="Image" src="https://github.com/user-attachments/assets/01babb10-8b77-4299-8f14-0d8279d784ca" />
 
 하이브리드 RAG로 부가가치세법 25개 조항에서 관련 법률을 검색하여, 법적 근거와 함께 역할별 맞춤 세무 조언을 제공합니다. 개인정보는 마스킹 처리 후 AI에 전달됩니다.
 
