@@ -17,9 +17,11 @@ import {
   Info,
   ShieldCheck,
   FilePlus2,
+  Loader2,
 } from 'lucide-react';
 import type { LegalReference } from '../data/legalKnowledge';
 import toast from 'react-hot-toast';
+import { useLoadingMessage } from '../../../hooks/useLoadingMessage';
 
 interface Props {
   data: InvoiceData;
@@ -35,6 +37,7 @@ export const StepAdvisory = ({ data, role, validationReport, userAnswers, onRese
   const [loading, setLoading] = useState(true);
   const [isMock, setIsMock] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
+  const loadingMessage = useLoadingMessage(loading);
 
   useEffect(() => {
     let isMounted = true;
@@ -108,37 +111,16 @@ export const StepAdvisory = ({ data, role, validationReport, userAnswers, onRese
 
           <div className="grow p-6 overflow-y-auto bg-white">
             {loading ? (
-              <div className="space-y-8 animate-pulse p-2">
-                <div className="h-3 bg-slate-100 rounded w-2/3"></div>
-                <div className="bg-blue-50/60 border border-blue-100 p-4 rounded-lg space-y-3">
-                  <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 bg-blue-200 rounded shrink-0"></div>
-                    <div className="h-4 bg-blue-200 rounded w-20"></div>
-                  </div>
-                  <div className="space-y-2">
-                    <div className="h-3 bg-blue-100 rounded w-full"></div>
-                    <div className="h-3 bg-blue-100 rounded w-5/6"></div>
-                    <div className="h-3 bg-blue-100 rounded w-4/6"></div>
+              <div className="flex flex-col items-center justify-center py-16">
+                <div className="relative mb-6">
+                  <div className="w-16 h-16 rounded-full bg-blue-50 flex items-center justify-center">
+                    <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
                   </div>
                 </div>
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="w-5 h-5 bg-slate-200 rounded shrink-0"></div>
-                    <div className="h-5 bg-slate-200 rounded w-32"></div>
-                  </div>
-                  {[1, 2, 3, 4].map((i) => (
-                    <div
-                      key={i}
-                      className="flex items-start p-4 rounded-lg border border-slate-100 bg-slate-50/50"
-                    >
-                      <div className="w-1.5 h-1.5 bg-slate-300 rounded-full mr-3 mt-2 shrink-0"></div>
-                      <div className="space-y-2 w-full">
-                        <div className="h-3 bg-slate-200 rounded w-full"></div>
-                        <div className="h-3 bg-slate-100 rounded w-3/4"></div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                <p className="text-sm text-slate-700 font-medium text-center transition-all duration-300">
+                  {loadingMessage}
+                </p>
+                <p className="text-xs text-slate-400 mt-2">잠시만 기다려주세요</p>
               </div>
             ) : advisory ? (
               <div className="space-y-8 animate-fade-in">
@@ -246,20 +228,9 @@ export const StepAdvisory = ({ data, role, validationReport, userAnswers, onRese
           </div>
           <div className="grow overflow-y-auto p-4 space-y-4 bg-slate-50/50">
             {loading ? (
-              <div className="space-y-4 animate-pulse">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="bg-white p-4 rounded-lg border border-slate-200">
-                    <div className="flex items-center gap-1.5 mb-3">
-                      <div className="w-4 h-4 bg-blue-100 rounded shrink-0"></div>
-                      <div className="h-3 bg-blue-100 rounded w-32"></div>
-                    </div>
-                    <div className="space-y-2">
-                      <div className="h-3 bg-slate-100 rounded w-full"></div>
-                      <div className="h-3 bg-slate-100 rounded w-5/6"></div>
-                      <div className="h-3 bg-slate-100 rounded w-3/4"></div>
-                    </div>
-                  </div>
-                ))}
+              <div className="flex flex-col items-center justify-center py-12">
+                <Loader2 className="w-6 h-6 text-slate-400 animate-spin mb-3" />
+                <p className="text-xs text-slate-400">관련 법령 검색 중…</p>
               </div>
             ) : references.length > 0 ? (
               references.map((ref) => (
