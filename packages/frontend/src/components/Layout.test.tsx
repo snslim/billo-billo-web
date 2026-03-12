@@ -21,7 +21,7 @@ describe('Layout', () => {
     );
 
     expect(screen.getByText('Billo-Billo')).toBeInTheDocument();
-    expect(screen.getByText('세금계산서 검증 서비스')).toBeInTheDocument();
+    expect(screen.getByText('AI 세무 비서')).toBeInTheDocument();
   });
 
   it('자식 요소를 렌더링한다', () => {
