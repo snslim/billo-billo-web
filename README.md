@@ -1,7 +1,7 @@
 [![CI](https://github.com/snslim/billo-billo-web/actions/workflows/ci.yml/badge.svg)](https://github.com/snslim/billo-billo-web/actions/workflows/ci.yml)
 
 <p align="center">
-  <img width="640" height="400" alt="Image" src="https://github.com/user-attachments/assets/ba32e141-536e-462b-88d6-f3c2c5e734bb" />
+  <img width="360" height="225" alt="Billo-Billo" src="https://github.com/user-attachments/assets/ba32e141-536e-462b-88d6-f3c2c5e734bb" />
 </p>
 
 <br>
